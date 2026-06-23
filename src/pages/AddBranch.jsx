@@ -5,12 +5,16 @@ import Button from "../ui/Button";
 import { postData } from "../utils/api";
 import { toast } from "react-toastify";
 import { useAuthContext } from "../utils/context/CreateAuthContext";
+import { useProductsContext } from "../utils/context/CreateProductContext";
 import { isAddBranchFormValid } from "../services/form/FormValidations";
+import { getFriendlyErrorMessage } from "../utils/errorMessages";
 import { Menu } from "lucide-react";
 import ResponsiveNav from "../components/ResponsiveNav";
+import Error from "../components/Error";
 
 const AddBranch = () => {
   const { user } = useAuthContext();
+  const { setBranches } = useProductsContext();
   const [formData, setFormData] = useState({
     name: "",
     location: "",
@@ -38,7 +42,13 @@ const AddBranch = () => {
         createdAt: new Date().toISOString(),
       };
 
-      await postData(newBranch, "branches");
+      const response = await postData(newBranch, "branches");
+      const createdBranch = {
+        id: response?.data?.name || Date.now().toString(),
+        ...newBranch,
+      };
+
+      setBranches((prev) => [createdBranch, ...prev]);
       toast.success("Branch added successfully!");
 
       setFormData({
@@ -47,9 +57,7 @@ const AddBranch = () => {
       });
       setErrorMessage("");
     } catch (err) {
-      if (err.message) {
-        setErrorMessage("Failed to add branch");
-      }
+      setErrorMessage(getFriendlyErrorMessage(err, "general"));
     } finally {
       setLoading(false);
     }
@@ -105,16 +113,9 @@ const AddBranch = () => {
                 }}
               />
 
-              {errorMessage && (
-                <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-100 transition-all">
-                  {errorMessage}
-                </div>
-              )}
-
-              <div className="pt-4">
-                <Button
-                  disabled={loading}
-                  className="w-full py-3 shadow-lg shadow-indigo-100">
+              <Error message={errorMessage}>{errorMessage}</Error>
+              <div className={!errorMessage && "pt-4"}>
+                <Button disabled={loading}>
                   {loading ? "Adding Branch..." : "Add Branch"}
                 </Button>
               </div>

@@ -7,8 +7,10 @@ import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { toast } from "react-toastify";
 import { isRecordChargingFormValid } from "../services/form/FormValidations";
+import { getFriendlyErrorMessage } from "../utils/errorMessages";
 import { Menu } from "lucide-react";
 import ResponsiveNav from "../components/ResponsiveNav";
+import Error from "../components/Error";
 
 const RecordCharging = () => {
   const { user } = useAuthContext();
@@ -16,7 +18,7 @@ const RecordCharging = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     phonesCharged: "",
@@ -63,9 +65,7 @@ const RecordCharging = () => {
 
       navigate("/dashboard");
     } catch (err) {
-      if (err.message) {
-        setError("Failed to record charging activity. Please try again.");
-      }
+      setError(getFriendlyErrorMessage(err, "general"));
     } finally {
       setLoading(false);
     }
@@ -112,7 +112,6 @@ const RecordCharging = () => {
                     value: formData.phonesCharged,
                     onChange: handleChange,
                     placeholder: "e.g., 10",
-                    required: true,
                   }}
                 />
 
@@ -125,16 +124,11 @@ const RecordCharging = () => {
                     onChange: handleChange,
                     placeholder: "0.00",
                     step: "0.01",
-                    required: true,
                   }}
                 />
               </div>
 
-              {error && (
-                <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg">
-                  {error}
-                </div>
-              )}
+              <Error message={error}>{error}</Error>
 
               <Button disabled={loading}>
                 {loading ? "Saving Activity..." : "Record Charging"}

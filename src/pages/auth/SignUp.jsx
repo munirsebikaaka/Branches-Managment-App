@@ -8,7 +8,9 @@ import { fetchData } from "../../utils/api";
 import SignUpDisabled from "../../components/auth/SignupDisabled";
 import CheckingOwner from "../../components/auth/CheckingOwner";
 import { isSignUpFormValid } from "../../services/form/FormValidations";
+import { getFriendlyErrorMessage } from "../../utils/errorMessages";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
+import Error from "../../components/Error";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -26,6 +28,12 @@ const SignUp = () => {
   const [checkIsOwnerHasAccount, setCheckIsOwnerHasAccount] = useState(true);
 
   const { signUp, error: authError } = useAuthContext();
+
+  const authenticationError = validationError
+    ? validationError
+    : error
+      ? error
+      : authError;
 
   const navigate = useNavigate();
 
@@ -64,7 +72,7 @@ const SignUp = () => {
 
       navigate("/owner");
     } catch (err) {
-      setError(`${err.message}`);
+      setError(getFriendlyErrorMessage(err, "signup"));
 
       setFormData((prev) => ({
         ...prev,
@@ -86,7 +94,7 @@ const SignUp = () => {
         const exists = users.some((user) => user.role === "owner");
         setOwnerExists(exists);
       } catch (err) {
-        setError(err.message);
+        setError(getFriendlyErrorMessage(err, "fetch"));
       } finally {
         setCheckIsOwnerHasAccount(false);
       }
@@ -174,16 +182,10 @@ const SignUp = () => {
             </button>
           </div>
 
-          {(validationError || authError || error) && (
-            <div className="bg-red-50 text-red-500 text-xs font-medium p-3 rounded-xl border border-red-100 text-center">
-              {validationError || authError || error}
-            </div>
-          )}
+          <Error message={authenticationError}></Error>
 
           <div className="pt-2">
-            <Button
-              disabled={loading}
-              className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98]">
+            <Button disabled={loading}>
               {loading ? "Creating Account..." : "Register as Owner"}
             </Button>
           </div>

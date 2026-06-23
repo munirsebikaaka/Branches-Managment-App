@@ -6,9 +6,11 @@ import { toast } from "react-toastify";
 import { useAuthContext } from "../utils/context/CreateAuthContext";
 import { useProductsContext } from "../utils/context/CreateProductContext";
 import { isManageWorkersFormValid } from "../services/form/FormValidations";
-import { Menu } from "lucide-react";
+import { getFriendlyErrorMessage } from "../utils/errorMessages";
 import ResponsiveNav from "../components/ResponsiveNav";
 import NoBranches from "../components/NoBranchesMessage";
+import Error from "../components/Error";
+import LoadingPage from "../components/LoadingPage";
 
 export const ManageWorkers = () => {
   const [formData, setFormData] = useState({
@@ -21,9 +23,14 @@ export const ManageWorkers = () => {
 
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { registerWorker, error } = useAuthContext();
   const [errorMessage, setErrorMessage] = useState("");
-  const { branches } = useProductsContext();
+  const {
+    branches,
+    loading: fetchingLoading,
+    setWorkers,
+  } = useProductsContext();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -35,7 +42,7 @@ export const ManageWorkers = () => {
     setLoading(true);
 
     try {
-      await registerWorker(
+      const createdWorker = await registerWorker(
         formData.email,
         formData.password,
         formData.name,
@@ -43,6 +50,10 @@ export const ManageWorkers = () => {
         "worker",
         formData.workerId,
       );
+
+      if (createdWorker) {
+        setWorkers((prev) => [createdWorker, ...prev]);
+      }
 
       toast.success("Worker registered successfully");
 
@@ -55,9 +66,7 @@ export const ManageWorkers = () => {
       });
       setErrorMessage("");
     } catch (err) {
-      if (err.message) {
-        setErrorMessage("Failed to register worker");
-      }
+      setErrorMessage(getFriendlyErrorMessage(err, "general"));
     } finally {
       setLoading(false);
     }
@@ -65,7 +74,16 @@ export const ManageWorkers = () => {
 
   const isBranchesCreateAlready = branches?.length > 0;
 
-  if (!isBranchesCreateAlready) return <NoBranches />;
+  if (fetchingLoading) {
+    return (
+      <LoadingPage
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+      />
+    );
+  }
+
+  if (!fetchingLoading && !isBranchesCreateAlready) return <NoBranches />;
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative">
@@ -108,7 +126,6 @@ export const ManageWorkers = () => {
                     value: formData.name,
                     onChange: handleChange,
                     placeholder: "John Doe",
-                    required: true,
                   }}
                 />
                 <Input
@@ -119,7 +136,6 @@ export const ManageWorkers = () => {
                     value: formData.email,
                     onChange: handleChange,
                     placeholder: "test@gmail.com",
-                    required: true,
                   }}
                 />
               </div>
@@ -133,7 +149,6 @@ export const ManageWorkers = () => {
                     value: formData.workerId,
                     onChange: handleChange,
                     placeholder: "W-1002",
-                    required: true,
                   }}
                 />
 
@@ -145,8 +160,7 @@ export const ManageWorkers = () => {
                     name="branchId"
                     value={formData.branchId}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 bg-white border border-[#e2e8f0] rounded-lg text-[#0f172a] text-sm focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/20 focus:border-[#4f46e5] transition-all"
-                    required>
+                    className="w-full px-4 py-2.5 bg-white border border-[#e2e8f0] rounded-lg text-[#0f172a] text-sm focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/20 focus:border-[#4f46e5] transition-all">
                     <option value="">Select Branch</option>
                     {branches.map((branch) => (
                       <option key={branch.id} value={branch.id}>
@@ -157,31 +171,33 @@ export const ManageWorkers = () => {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-[#f1f5f9]">
+              <div className="pt-4 border-t border-[#f1f5f9] relative">
                 <Input
                   label={"Password"}
                   inputConfig={{
-                    type: "password",
+                    type: showPassword ? "text" : "password",
                     name: "password",
                     value: formData.password,
                     onChange: handleChange,
                     placeholder: "••••••••",
-                    required: true,
                   }}
                 />
 
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-[55px] text-[#94a3b8] hover:text-indigo-600 transition-colors">
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+
                 <p className="mt-2 text-[11px] text-[#94a3b8]">
-                  Workers can change this password for their own safety.
+                  Workers will be able to change their passwords soon.
                 </p>
               </div>
 
-              {(errorMessage || error) && (
-                <div className="p-4 bg-red-50 border border-red-100 rounded-xl">
-                  <p className="text-red-500 text-sm text-center">
-                    {errorMessage || error}
-                  </p>
-                </div>
-              )}
+              <Error message={errorMessage || error}>
+                {errorMessage || error}
+              </Error>
 
               <Button disabled={loading}>
                 {loading ? "Registering..." : "Register Worker"}

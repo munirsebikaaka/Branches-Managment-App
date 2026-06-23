@@ -88,11 +88,11 @@ const Products = () => {
 
           <div className="space-y-4">
             <div
-              className={`hidden md:grid gap-4 px-6 py-4 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl text-xs font-bold text-[#94a3b8] uppercase tracking-wider ${user?.role === "owner" ? "grid-cols-6" : "grid-cols-5"}`}>
+              className={`hidden md:grid gap-4 px-6 py-4 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl text-xs text-[#94a3b8] uppercase ${user?.role === "owner" ? "grid-cols-6" : "grid-cols-5"}`}>
               <span>Name</span>
               <span>Category</span>
               <span>Stock</span>
-              <span>Buy Price</span>
+              <span> Price</span>
               <span>Sell Price</span>
               {user?.role === "owner" && <span>Branch</span>}
             </div>
@@ -106,7 +106,7 @@ const Products = () => {
                 filteredProducts.map((product) => (
                   <div
                     key={product.id}
-                    className={`bg-white p-5 md:px-6 md:py-4 rounded-2xl border border-[#e2e8f0] shadow-sm hover:border-[#4f46e5]/30 transition-colors grid grid-cols-2 gap-y-3 gap-x-4 items-center  ${user?.role === "owner" ? "md:grid-cols-6" : "md:grid-cols-5"}`}>
+                    className={`bg-white p-5  md:px-6 md:py-4 rounded-2xl border border-[#e2e8f0] shadow-sm hover:border-[#4f46e5]/30 transition-colors grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4 items-center justify-center  ${user?.role === "owner" ? "md:grid-cols-6" : "md:grid-cols-5"}`}>
                     <div className="col-span-2 md:col-span-1">
                       <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
                         Name
@@ -130,16 +130,16 @@ const Products = () => {
                         Stock
                       </p>
                       <p
-                        className={`text-sm font-medium ${product.quantity < 5 ? "text-red-500" : "text-[#475569]"}`}>
+                        className={`text-sm md:text-xs lg:text-ms font-medium ${product.quantity < 5 ? "text-red-500" : "text-[#475569]"}`}>
                         {product.quantity} units
                       </p>
                     </div>
 
                     <div>
                       <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
-                        Buy Price
+                        Price
                       </p>
-                      <p className="text-[#475569] text-sm">
+                      <p className="text-[#475569] text-sm md:text-xs lg:text-sm">
                         UGX {product.buyingPrice}
                       </p>
                     </div>
@@ -148,7 +148,7 @@ const Products = () => {
                       <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
                         Sell Price
                       </p>
-                      <p className="text-[#4f46e5] font-semibold text-sm">
+                      <p className="text-[#4f46e5] font-semibold text-sm md:text-xs lg:text-sm">
                         UGX {product.sellingPrice}
                       </p>
                     </div>

@@ -54,11 +54,9 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
             <div className="w-8 h-8 bg-[#4f46e5] rounded-md flex items-center justify-center text-white font-bold">
               A
             </div>
-            <h2 className="text-sm font-bold text-[#0f172a] tracking-tight">
-              Auntie's Shops
-            </h2>
+            <h2 className="text-sm font-bold text-[#0f172a]">Auntie's Shops</h2>
           </div>
-          <p className="text-[10px] uppercase tracking-[0.1em] font-bold text-[#94a3b8] px-1">
+          <p className="text-[10px] uppercase font-bold text-[#94a3b8] px-1">
             Shop's System
           </p>
         </div>
@@ -155,7 +153,7 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
       <div className="p-3 border-t border-[#f1f5f9]">
         <button
           onClick={handleLogout}
-          className="flex items-center justify-center gap-2 w-full py-2.5 text-sm font-semibold text-[#ef4444] hover:bg-red-50 rounded-lg transition-colors">
+          className="w-full py-2.5 text-sm font-semibold text-[#ef4444] hover:bg-red-50 rounded-lg transition-colors">
           Logout
         </button>
       </div>

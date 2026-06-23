@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchData } from "../utils/api";
+import { getFriendlyErrorMessage } from "../utils/errorMessages";
 import { ProductsContext } from "../utils/context/CreateProductContext";
 
 const ProductsProvider = ({ children }) => {
@@ -26,7 +27,7 @@ const ProductsProvider = ({ children }) => {
         const allWorkers = await fetchData(setError, "users");
         setWorkers(allWorkers);
       } catch (err) {
-        setError(err);
+        setError(getFriendlyErrorMessage(err, "fetch"));
       } finally {
         setLoading(false);
       }
@@ -41,9 +42,13 @@ const ProductsProvider = ({ children }) => {
         products,
         setProducts,
         salesData,
+        setSalesData,
         chargingData,
+        setChargingData,
         branches,
+        setBranches,
         workers,
+        setWorkers,
         loading,
         error,
         setError,

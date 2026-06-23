@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"; // Removed useEffect as we'll handle delete in handleSubmit
+import { useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
 import { deleteData, postData, updateData } from "../utils/api";
@@ -8,14 +8,16 @@ import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { toast } from "react-toastify";
 import { isRecordSaleFormValid } from "../services/form/FormValidations";
+import { getFriendlyErrorMessage } from "../utils/errorMessages";
 import ResponsiveNav from "../components/ResponsiveNav";
 import LoadingPage from "../components/LoadingPage";
 import FetchedError from "../components/FefchError";
+import Error from "../components/Error";
 
 const RecordSale = () => {
   const { user } = useAuthContext();
 
-  const { products, loading } = useProductsContext();
+  const { products, loading, setProducts, setSalesData } = useProductsContext();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -87,23 +89,37 @@ const RecordSale = () => {
         createdAt: new Date().toISOString(),
       };
 
-      await postData(sale, "sales");
+      const saleResponse = await postData(sale, "sales");
+      const createdSale = {
+        id: saleResponse?.data?.name || Date.now().toString(),
+        ...sale,
+      };
+
+      setSalesData((prev) => [createdSale, ...prev]);
 
       if (newQuantity <= 0) {
         await deleteData("products", selectedProduct.id);
+        setProducts((prev) =>
+          prev.filter((item) => item.id !== selectedProduct.id),
+        );
         toast.warning(`${selectedProduct.name} is now out of stock!`);
       } else {
         await updateData("products", selectedProduct.id, {
           quantity: newQuantity,
         });
+        setProducts((prev) =>
+          prev.map((item) =>
+            item.id === selectedProduct.id
+              ? { ...item, quantity: newQuantity }
+              : item,
+          ),
+        );
       }
 
       toast.success("Sale recorded successfully!");
       navigate(`/dashboard?branchId=${activeBranchId}`);
     } catch (err) {
-      if (err.message) {
-        setError("Failed to record sale");
-      }
+      setError(getFriendlyErrorMessage(err, "general"));
     } finally {
       setSubmitting(false);
     }
@@ -183,11 +199,7 @@ const RecordSale = () => {
                   }}
                 />
               </div>
-              {error && (
-                <div className="p-3 bg-red-50 border text-center border-red-100 text-red-600 text-sm rounded-lg">
-                  {error}
-                </div>
-              )}
+              <Error message={error}>{error}</Error>
               <Button disabled={loading || submitting}>
                 {submitting ? "Processing..." : "Complete Sale"}
               </Button>

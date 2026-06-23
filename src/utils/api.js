@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getFriendlyErrorMessage } from "./errorMessages";
 
 const FETCHING_DATA_URL =
   "https://auntie-s-products-default-rtdb.firebaseio.com";
@@ -22,7 +23,9 @@ export async function fetchData(setErrorMessage, endPoint) {
     }
     return appData;
   } catch (error) {
-    if (setErrorMessage) setErrorMessage(`${error.message}`);
+    if (setErrorMessage) {
+      setErrorMessage(getFriendlyErrorMessage(error, "fetch"));
+    }
     return [];
   }
 }

@@ -4,7 +4,9 @@ import { useAuthContext } from "../../utils/context/CreateAuthContext";
 import Button from "../../ui/Button";
 import Input from "../../ui/Input";
 import { isLoginFormValid } from "../../services/form/FormValidations";
+import { getFriendlyErrorMessage } from "../../utils/errorMessages";
 import { LockKeyhole, Eye, EyeOff } from "lucide-react";
+import Error from "../../components/Error";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -34,22 +36,15 @@ const Login = () => {
         navigate("/dashboard");
       }
     } catch (err) {
-      if (
-        err.message ===
-        "Cannot read properties of undefined (reading 'idToken')"
-      ) {
-        setLocalError("Login failed: Network Error!");
-      }
+      console.log(err);
+      setLocalError(getFriendlyErrorMessage(err, "login"));
     } finally {
       setIsCheckingUserRole(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] font-['Outfit',_sans-serif] p-6 relative overflow-hidden">
-      <div className="absolute top-[-10%] left-[-10%] w-72 h-72 bg-indigo-50 rounded-full blur-3xl opacity-60" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-50 rounded-full blur-3xl opacity-60" />
-
+    <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] font-['Outfit',_sans-serif] p-6">
       <div className="w-full max-w-md bg-white rounded-[2rem] border border-[#e2e8f0] shadow-2xl shadow-indigo-100/50 p-10 z-10">
         <div className="flex flex-col items-center mb-8">
           <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-indigo-200">
@@ -92,16 +87,12 @@ const Login = () => {
             </button>
           </div>
 
-          {authenticationError && (
-            <div className="bg-red-50 text-red-500 text-xs font-medium p-3 rounded-xl border border-red-100 text-center">
-              Login failed: {authenticationError}!
-            </div>
-          )}
+          <Error message={authenticationError}>
+            Login Failed: {authenticationError}
+          </Error>
 
           <div className="pt-2">
-            <Button
-              disabled={loading || isCheckingUserRole}
-              className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98]">
+            <Button disabled={loading || isCheckingUserRole}>
               {loading || isCheckingUserRole ? "Signing in..." : "Sign In"}
             </Button>
           </div>

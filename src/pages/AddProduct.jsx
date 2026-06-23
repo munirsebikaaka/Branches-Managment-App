@@ -1,42 +1,51 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../utils/context/CreateAuthContext";
+import { useProductsContext } from "../utils/context/CreateProductContext";
 import { Sidebar } from "../components/Sidebar";
 import { postData } from "../utils/api";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { toast } from "react-toastify";
 import { isAddProductsFormValid } from "../services/form/FormValidations";
-import { Menu } from "lucide-react";
+import { getFriendlyErrorMessage } from "../utils/errorMessages";
 import ResponsiveNav from "../components/ResponsiveNav";
+import Error from "../components/Error";
+
+const CATEGORIES = [
+  { value: "electronics", label: "Electronics" },
+  { value: "phones", label: "Phones" },
+  { value: "accessories", label: "Accessories" },
+  { value: "other", label: "Other" },
+];
+
+const INITIAL_FORM_STATE = {
+  name: "",
+  category: "electronics",
+  buyingPrice: "",
+  sellingPrice: "",
+  quantity: "",
+};
 
 const AddProduct = () => {
   const { user } = useAuthContext();
-  const navigate = useNavigate();
+  const { setProducts } = useProductsContext();
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    category: "electronics",
-    buyingPrice: "",
-    sellingPrice: "",
-    quantity: "",
-  });
+  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        name === "quantity" || name === "buyingPrice" || name === "sellingPrice"
-          ? value === ""
-            ? ""
-            : Number(value)
-          : value,
+      [name]: ["quantity", "buyingPrice", "sellingPrice"].includes(name)
+        ? value === ""
+          ? ""
+          : Number(value)
+        : value,
     }));
   };
 
@@ -56,29 +65,27 @@ const AddProduct = () => {
         createdAt: new Date().toISOString(),
       };
 
-      await postData(product, "products");
+      const response = await postData(product, "products");
+
+      const createdProduct = {
+        id: response?.data?.name || Date.now().toString(),
+        ...product,
+      };
+
+      setProducts((prev) => [createdProduct, ...prev]);
 
       toast.success("Product added successfully!");
 
-      setFormData({
-        name: "",
-        category: "electronics",
-        buyingPrice: "",
-        sellingPrice: "",
-        quantity: "",
-      });
-
-      navigate("/dashboard");
+      setFormData(INITIAL_FORM_STATE);
     } catch (err) {
-      if (err.message) {
-        setError("Failed to add product. Please check your connection.");
-      }
+      setError(getFriendlyErrorMessage(err, "general"));
     } finally {
       setLoading(false);
     }
   };
 
   const labelClass = "text-sm font-semibold text-[#475569] mb-1.5 block pl-2.5";
+
   const inputClass =
     "w-full px-4 py-2.5 bg-white border border-[#e2e8f0] rounded-lg text-[#0f172a] text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/20 focus:border-[#4f46e5] placeholder:text-[#94a3b8]";
 
@@ -101,7 +108,8 @@ const AddProduct = () => {
             <h3 className="text-3xl font-bold text-[#0f172a]">
               Add New Product
             </h3>
-            <p className="text-[#64748b] mt-1">
+
+            <p className="text-[#64748b] mt-1 text-center">
               Fill in the details below to restock or add a new item to your
               branch.
             </p>
@@ -116,27 +124,29 @@ const AddProduct = () => {
                   name: "name",
                   value: formData.name,
                   onChange: handleChange,
-                  placeholder: "e.g., iPhone 12 Pro",
+                  placeholder: "e.g. iPhone 12 Pro",
                 }}
               />
 
               <div className="flex flex-col items-start">
                 <label className={labelClass}>Category</label>
+
                 <select
                   name="category"
                   className={inputClass}
                   value={formData.category}
                   onChange={handleChange}>
-                  <option value="electronics">Electronics</option>
-                  <option value="phones">Phones</option>
-                  <option value="accessories">Accessories</option>
-                  <option value="other">Other</option>
+                  {CATEGORIES.map((category) => (
+                    <option key={category.value} value={category.value}>
+                      {category.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
-                  label={"Buy Price"}
+                  label="Buy Price"
                   inputConfig={{
                     type: "number",
                     name: "buyingPrice",
@@ -146,8 +156,9 @@ const AddProduct = () => {
                     step: "0.01",
                   }}
                 />
+
                 <Input
-                  label={"Sell Price"}
+                  label="Sell Price"
                   inputConfig={{
                     type: "number",
                     name: "sellingPrice",
@@ -170,11 +181,7 @@ const AddProduct = () => {
                 }}
               />
 
-              {error && (
-                <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg flex items-center gap-2">
-                  {error}
-                </div>
-              )}
+              <Error message={error}>{error}</Error>
 
               <Button disabled={loading}>
                 {loading ? "Registering Product..." : "Confirm & Add Product"}

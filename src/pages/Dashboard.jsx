@@ -1,11 +1,9 @@
 import { useState, useMemo } from "react";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
-import { ArchiveRestore, MoveLeft } from "lucide-react";
-import StatCard from "../components/dashboard/DarshboardCard";
+import { ArchiveRestore } from "lucide-react";
 import { useProductsContext } from "../utils/context/CreateProductContext";
 import { useAuthContext } from "../utils/context/CreateAuthContext";
-import Loader from "../ui/Loader";
 import ResponsiveNav from "../components/ResponsiveNav";
 import DashboardHeader from "../components/dashboard/DashboardHead";
 import DashboardStats from "../components/dashboard/DashboardStats";
@@ -90,26 +88,17 @@ const Dashboard = () => {
           <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
           <FetchedError />
 
-          <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-8 gap-4">
+          <div className="mb-8">
             <DashboardHeader
               title={`${getBranchName[activeBranchId] || "Branch"} Dashboard`}>
-              Woker:{" "}
+              Worker:{" "}
               <span className="text-[#4f46e5] font-semibold bg-indigo-50 px-2 py-0.5 rounded">
                 {workerName}
               </span>
             </DashboardHeader>
-
-            <div className="text-sm text-[#94a3b8] font-medium">
-              {new Date().toLocaleDateString("en-US", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </div>
           </div>
 
-          <div className="flex flex-wrap gap-3 mb-8">
+          <div className="flex flex-col sm:flex-row gap-3 mb-8">
             <button
               onClick={() => navigate(`/products?branchId=${activeBranchId}`)}
               className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition shadow-md active:scale-95">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { authenticateUser, registerUser } from "../utils/auth";
 import { fetchData, postData } from "../utils/api";
+import { getFriendlyErrorMessage } from "../utils/errorMessages";
 import { AuthContext } from "../utils/context/CreateAuthContext";
 
 export const AuthProvider = ({ children }) => {
@@ -41,12 +42,7 @@ export const AuthProvider = ({ children }) => {
 
       return userData;
     } catch (err) {
-      if (
-        err.message ===
-        "Cannot read properties of undefined (reading 'idToken')"
-      ) {
-        setError("Login failed: Network Error!");
-      }
+      setError(getFriendlyErrorMessage(err, "login"));
     } finally {
       setLoading(false);
     }
@@ -84,13 +80,9 @@ export const AuthProvider = ({ children }) => {
 
       return userData;
     } catch (err) {
-      if (
-        err.message === "Cannot read properties of undefined (reading 'data')"
-      ) {
-        setError("Sign Up Failed: Network Error!");
-      }
+      setError(getFriendlyErrorMessage(err, "signup"));
     } finally {
-      setLoading(true);
+      setLoading(false);
     }
   };
 
@@ -119,7 +111,7 @@ export const AuthProvider = ({ children }) => {
       await postData(userData, "users");
       return userData;
     } catch (err) {
-      setError(err.message);
+      setError(getFriendlyErrorMessage(err, "signup"));
     }
   };
 
