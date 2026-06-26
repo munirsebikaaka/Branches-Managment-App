@@ -11,6 +11,7 @@ import ResponsiveNav from "../components/ResponsiveNav";
 import NoBranches from "../components/NoBranchesMessage";
 import Error from "../components/Error";
 import LoadingPage from "../components/LoadingPage";
+import { Eye, EyeOff } from "lucide-react";
 
 export const ManageWorkers = () => {
   const [formData, setFormData] = useState({

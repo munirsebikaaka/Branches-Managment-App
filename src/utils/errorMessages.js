@@ -1,4 +1,4 @@
-export const getFriendlyErrorMessage = (error, context = "auth") => {
+export const getFriendlyErrorMessage = (error, context) => {
   const backendMessage = error?.message || "";
   const message = String(backendMessage).toLowerCase();
 

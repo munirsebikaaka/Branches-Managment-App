@@ -182,7 +182,7 @@ const SignUp = () => {
             </button>
           </div>
 
-          <Error message={authenticationError}></Error>
+          <Error message={authenticationError}>{authenticationError}</Error>
 
           <div className="pt-2">
             <Button disabled={loading}>
