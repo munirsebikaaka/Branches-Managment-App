@@ -5,10 +5,6 @@ import { getFriendlyErrorMessage } from "../utils/errorMessages";
 import { AuthContext } from "../utils/context/CreateAuthContext";
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(() => {
-    return localStorage.getItem("authToken") || null;
-  });
-
   const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem("user");
     return storedUser ? JSON.parse(storedUser) : null;
@@ -26,20 +22,14 @@ export const AuthProvider = ({ children }) => {
         password,
         setAuthenticateError,
       );
-      const authToken = response.idToken;
       const uid = response.localId;
 
       const users = await fetchData(setError, "users");
       const userData = users.find((u) => u.id === uid);
-
       if (!userData) throw new Error("User data not found");
 
       setUser(userData);
-      setToken(authToken);
-
-      localStorage.setItem("authToken", authToken);
       localStorage.setItem("user", JSON.stringify(userData));
-
       return userData;
     } catch (err) {
       setError(getFriendlyErrorMessage(err, "login"));
@@ -71,11 +61,7 @@ export const AuthProvider = ({ children }) => {
       };
 
       await postData(userData, "users");
-      const authToken = response.idToken;
-
       setUser(userData);
-      setToken(authToken);
-      localStorage.setItem("authToken", authToken);
       localStorage.setItem("user", JSON.stringify(userData));
 
       return userData;
@@ -117,14 +103,11 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setUser(null);
-    setToken(null);
-    localStorage.removeItem("authToken");
     localStorage.removeItem("user");
   };
 
   const value = {
     user,
-    token,
     loading,
     error,
     login,

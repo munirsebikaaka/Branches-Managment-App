@@ -98,10 +98,7 @@ const Sales = () => {
 
           <FetchedError />
 
-          <SalesTable
-            filteredSales={filteredSales}
-            getBranchName={getBranchName}
-          />
+          <SalesTable filteredSales={filteredSales} />
           <OwnerBackButton user={user} />
         </div>
       </main>

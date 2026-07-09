@@ -29,8 +29,7 @@ const Login = () => {
     try {
       setIsCheckingUserRole(true);
       const user = await login(email.trim(), password.trim(), setLocalError);
-
-      if (user.role === "owner") {
+      if (user?.role === "owner") {
         navigate("/owner");
       } else {
         navigate("/dashboard");

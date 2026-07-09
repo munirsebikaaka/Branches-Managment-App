@@ -44,7 +44,7 @@ const AddProduct = () => {
       [name]: ["quantity", "buyingPrice", "sellingPrice"].includes(name)
         ? value === ""
           ? ""
-          : Number(value)
+          : +value
         : value,
     }));
   };

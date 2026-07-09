@@ -1,4 +1,12 @@
-const SalesTable = ({ filteredSales, getBranchName }) => {
+import { useMemo } from "react";
+import { getNames } from "../../services/pages/PagesFunctionalities";
+import { useProductsContext } from "../../utils/context/CreateProductContext";
+
+const SalesTable = ({ filteredSales }) => {
+  const { branches } = useProductsContext();
+
+  const getBranchName = useMemo(() => getNames(branches), [branches]);
+
   return (
     <div className="space-y-4">
       <div className="hidden md:grid md:grid-cols-6 gap-4 px-6 py-4 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl text-xs font-bold text-[#94a3b8] uppercase">

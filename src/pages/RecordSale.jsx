@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
 import { deleteData, postData, updateData } from "../utils/api";
 import { useAuthContext } from "../utils/context/CreateAuthContext";
@@ -20,19 +20,12 @@ const RecordSale = () => {
   const { products, loading, setProducts, setSalesData } = useProductsContext();
 
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const queryParams = new URLSearchParams(location.search);
-  const selectedBranchId = queryParams.get("branchId");
-
-  const activeBranchId =
-    user?.role === "owner" && selectedBranchId
-      ? selectedBranchId
-      : user?.branchId;
+  const activeBranchId = user?.branchId;
 
   const [formData, setFormData] = useState({
     productId: "",
@@ -56,7 +49,7 @@ const RecordSale = () => {
         name === "quantity" || name === "price"
           ? value === ""
             ? ""
-            : Number(value)
+            : +value
           : value,
     }));
   };
