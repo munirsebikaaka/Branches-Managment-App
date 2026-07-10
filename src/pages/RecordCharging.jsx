@@ -11,9 +11,12 @@ import { getFriendlyErrorMessage } from "../utils/errorMessages";
 import { Menu } from "lucide-react";
 import ResponsiveNav from "../components/ResponsiveNav";
 import Error from "../components/Error";
+import { useProductsContext } from "../utils/context/CreateProductContext";
 
 const RecordCharging = () => {
   const { user } = useAuthContext();
+  const { setChargingData } = useProductsContext();
+
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
@@ -30,7 +33,7 @@ const RecordCharging = () => {
 
     setFormData((prev) => ({
       ...prev,
-      [name]: value === "" ? "" : Number(value),
+      [name]: value === "" ? "" : +value,
     }));
   };
 
@@ -54,7 +57,14 @@ const RecordCharging = () => {
         createdAt: new Date().toISOString(),
       };
 
-      await postData(charging, "charging");
+      const response = await postData(charging, "charging");
+
+      const changingData = {
+        id: response.data.createdAt || Date.now().toString(),
+        ...charging,
+      };
+
+      setChargingData((prev) => [changingData, ...prev]);
 
       toast.success("Charging activity recorded successfully!");
 

@@ -21,11 +21,11 @@ export const getFriendlyErrorMessage = (error, context) => {
     return "Your session is no longer valid, or the request is not authorized. Please refresh the page and try again.";
   }
 
-  if (status === 403 || message.includes("operation_not_allowed")) {
+  if (message.includes("operation_not_allowed")) {
     return "This sign-up option is currently unavailable. Please contact support or try again later.";
   }
 
-  if (status === 429 || message.includes("too_many_attempts")) {
+  if (message.includes("too_many_attempts")) {
     return "Too many attempts were made. Please wait a moment and try again.";
   }
 

@@ -8,7 +8,7 @@ const CheckingOwner = () => {
         <h2 className="text-2xl font-bold text-[#0f172a] animate-pulse">
           Checking account status...
         </h2>
-        <p className="text-[#64748b] mt-2">
+        <p className="text-[#64748b] mt-1 text-sm">
           Checking if Owner Account already Exists.
         </p>
       </div>

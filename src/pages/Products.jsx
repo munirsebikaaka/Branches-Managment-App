@@ -19,9 +19,6 @@ const Products = () => {
   const queryParams = new URLSearchParams(location.search);
   const urlBranchId = queryParams.get("branchId");
 
-  console.log(location);
-  console.log(urlBranchId);
-
   const getBranchName = useMemo(() => getNames(branches), [branches]);
 
   const filteredProducts = useMemo(() => {
