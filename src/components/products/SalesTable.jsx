@@ -26,7 +26,7 @@ const SalesTable = ({ filteredSales }) => {
         filteredSales.map((sale) => (
           <div
             key={sale.id}
-            className="bg-white p-5 md:px-6 md:py-4 rounded-2xl border border-[#e2e8f0] shadow-sm hover:border-[#4f46e5]/30 transition-colors grid grid-cols-2 md:grid-cols-6 gap-y-3 gap-x-4 items-center">
+            className="bg-white p-5 md:px-6 md:py-4 rounded-2xl border border-[#e2e8f0] shadow-sm hover:border-[#4f46e5]/30 transition-colors grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-y-3 gap-x-4 items-center">
             <div className="col-span-2 md:col-span-1">
               <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
                 Product

@@ -5,7 +5,7 @@ const RecentSales = ({ filteredSales }) => {
   const recentSales = useMemo(() => {
     return [...filteredSales]
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 5);
+      .slice(0, 10);
   }, [filteredSales]);
 
   return (

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Sidebar } from "../components/Sidebar";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
@@ -31,7 +31,14 @@ export const ManageWorkers = () => {
     branches,
     loading: fetchingLoading,
     setWorkers,
+    workers,
   } = useProductsContext();
+
+  const emptyBranches = useMemo(() => {
+    return branches.filter(
+      (branch) => !workers.some((worker) => worker.branchId === branch.id),
+    );
+  }, [branches, workers]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -73,7 +80,7 @@ export const ManageWorkers = () => {
     }
   };
 
-  const isBranchesCreateAlready = branches?.length > 0;
+  const isBranchesCreateAlready = emptyBranches?.length > 0;
 
   if (fetchingLoading) {
     return (
@@ -84,7 +91,8 @@ export const ManageWorkers = () => {
     );
   }
 
-  if (!fetchingLoading && !isBranchesCreateAlready) return <NoBranches />;
+  if (!fetchingLoading && !isBranchesCreateAlready)
+    return <NoBranches emptyBranches={emptyBranches} branches={branches} />;
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative">
@@ -163,7 +171,7 @@ export const ManageWorkers = () => {
                     onChange={handleChange}
                     className="w-full px-4 py-2.5 bg-white border border-[#e2e8f0] rounded-lg text-[#0f172a] text-sm focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/20 focus:border-[#4f46e5] transition-all">
                     <option value="">Select Branch</option>
-                    {branches.map((branch) => (
+                    {emptyBranches.map((branch) => (
                       <option key={branch.id} value={branch.id}>
                         {branch.branchName}
                       </option>

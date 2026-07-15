@@ -1,17 +1,23 @@
 import { Link } from "react-router-dom";
 import { MapPinOff, ArrowRight } from "lucide-react";
 
-const NoBranches = () => {
+const NoBranches = ({ emptyBranches, branches }) => {
+  const noBranchesYet = branches.length <= 0;
+  const isEmptyBranchesAvailable = emptyBranches.length >= 1;
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center font-['Outfit',_sans-serif]">
       <div className="mb-6">
         <MapPinOff className="text-[#94a3b8] mx-auto mb-4" size={48} />
         <h3 className="text-xl font-bold text-[#0f172a]">
-          No Branches Available
+          {noBranchesYet
+            ? "No Branches Available"
+            : !isEmptyBranchesAvailable && "All Branches are Occupied"}{" "}
         </h3>
         <p className="text-[#64748b] mt-2 max-w-sm">
-          You cannot create a worker until you have registered a branch in the
-          system.
+          {noBranchesYet
+            ? "You cannot create a worker until you have registered a branch in the system."
+            : !isEmptyBranchesAvailable &&
+              "No empty branches found. Please create  branches first to start adding workers."}
         </p>
       </div>
 
