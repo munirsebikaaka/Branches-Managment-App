@@ -8,6 +8,7 @@ import LoadingPage from "../components/LoadingPage";
 import OwnerBackButton from "../ui/OwnerBackButton";
 import FetchedError from "../components/FefchError";
 import { getNames } from "../services/pages/PagesFunctionalities";
+import Blur from "../components/Blur";
 
 const Products = () => {
   const { user } = useAuthContext();
@@ -50,12 +51,8 @@ const Products = () => {
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative">
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[40] md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+      <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
+
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       <main className="flex-1 min-h-screen md:ml-64 transition-all duration-300">
         <div className="w-full p-6 md:p-10 lg:p-12 space-y-10">

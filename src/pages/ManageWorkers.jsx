@@ -12,6 +12,7 @@ import NoBranches from "../components/NoBranchesMessage";
 import Error from "../components/Error";
 import LoadingPage from "../components/LoadingPage";
 import { Eye, EyeOff } from "lucide-react";
+import Blur from "../components/Blur";
 
 export const ManageWorkers = () => {
   const [formData, setFormData] = useState({
@@ -96,12 +97,7 @@ export const ManageWorkers = () => {
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative">
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[40] md:hidden transition-opacity duration-300"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+      <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
 
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 

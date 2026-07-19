@@ -10,6 +10,7 @@ import LoadingPage from "../components/LoadingPage";
 import FetchedError from "../components/FefchError";
 import { getNames } from "../services/pages/PagesFunctionalities";
 import SalesTable from "../components/products/SalesTable";
+import Blur from "../components/Blur";
 
 const Sales = () => {
   const { user } = useAuthContext();
@@ -54,12 +55,7 @@ const Sales = () => {
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative">
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[40] md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+      <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
 
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 

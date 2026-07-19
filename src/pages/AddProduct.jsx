@@ -10,6 +10,7 @@ import { isAddProductsFormValid } from "../services/form/FormValidations";
 import { getFriendlyErrorMessage } from "../utils/errorMessages";
 import ResponsiveNav from "../components/ResponsiveNav";
 import Error from "../components/Error";
+import Blur from "../components/Blur";
 
 const CATEGORIES = [
   { value: "electronics", label: "Electronics" },
@@ -91,13 +92,7 @@ const AddProduct = () => {
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative">
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[40] md:hidden transition-opacity duration-300"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-
+      <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <main className="flex-1 p-6 md:p-12 md:ml-64 transition-all duration-300">

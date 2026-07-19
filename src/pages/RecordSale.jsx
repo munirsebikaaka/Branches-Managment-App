@@ -13,6 +13,7 @@ import ResponsiveNav from "../components/ResponsiveNav";
 import LoadingPage from "../components/LoadingPage";
 import FetchedError from "../components/FefchError";
 import Error from "../components/Error";
+import Blur from "../components/Blur";
 
 const RecordSale = () => {
   const { user } = useAuthContext();
@@ -133,12 +134,8 @@ const RecordSale = () => {
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative">
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[40] md:hidden transition-opacity duration-300"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+      <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
+
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       <main className="flex-1 p-6 md:p-12 md:ml-64 transition-all duration-300">
         <div className="max-w-2xl mx-auto">

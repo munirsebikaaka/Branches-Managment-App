@@ -15,6 +15,7 @@ import {
 import RecentSales from "../components/dashboard/RecentSales";
 import OwnerBackButton from "../ui/OwnerBackButton";
 import FetchedError from "../components/FefchError";
+import Blur from "../components/Blur";
 
 const Dashboard = () => {
   const { user } = useAuthContext();
@@ -76,12 +77,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative">
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[40] md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+      <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       <main className="flex-1 p-4 md:p-12 md:ml-64 transition-all duration-300">
         <div className="max-w-6xl mx-auto">
