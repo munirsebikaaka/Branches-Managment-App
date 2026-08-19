@@ -8,7 +8,6 @@ import { useAuthContext } from "../utils/context/CreateAuthContext";
 import { useProductsContext } from "../utils/context/CreateProductContext";
 import { isAddBranchFormValid } from "../services/form/FormValidations";
 import { getFriendlyErrorMessage } from "../utils/errorMessages";
-import { Menu } from "lucide-react";
 import ResponsiveNav from "../components/ResponsiveNav";
 import Error from "../components/Error";
 import Blur from "../components/Blur";
@@ -26,7 +25,8 @@ const AddBranch = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {

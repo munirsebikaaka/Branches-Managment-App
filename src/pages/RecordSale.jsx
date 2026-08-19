@@ -44,15 +44,7 @@ const RecordSale = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        name === "quantity" || name === "price"
-          ? value === ""
-            ? ""
-            : +value
-          : value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -69,14 +61,14 @@ const RecordSale = () => {
     try {
       setSubmitting(true);
 
-      const total = formData.quantity * formData.price;
-      const newQuantity = selectedProduct.quantity - formData.quantity;
+      const total = +formData.quantity * +formData.price;
+      const newQuantity = selectedProduct.quantity - +formData.quantity;
 
       const sale = {
         productId: formData.productId,
         productName: selectedProduct.name,
-        quantity: formData.quantity,
-        price: formData.price,
+        quantity: +formData.quantity,
+        price: +formData.price,
         total,
         branchId: activeBranchId,
         createdBy: user?.id,

@@ -32,10 +32,7 @@ const RecordCharging = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value === "" ? "" : +value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -50,8 +47,8 @@ const RecordCharging = () => {
       const total = formData.phonesCharged * formData.pricePerPhone;
 
       const charging = {
-        phonesCharged: formData.phonesCharged,
-        pricePerPhone: formData.pricePerPhone,
+        phonesCharged: +formData.phonesCharged,
+        pricePerPhone: +formData.pricePerPhone,
         total,
         branchId: user?.branchId,
         createdBy: user?.id,
