@@ -69,7 +69,7 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
       </div>
 
       <div className="mx-4 my-4 p-4 bg-[#f8fafc] rounded-xl border border-[#f1f5f9] flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-[#e2e8f0] flex items-center justify-center text-[#475569] font-semibold uppercase shrink-0">
+        <div className="w-10 h-10 rounded-full bg-[#e2e8f0] flex items-center justify-center text-[#475569] font-semibold uppercase">
           {user?.name?.[0]}
         </div>
         <div className="overflow-hidden">

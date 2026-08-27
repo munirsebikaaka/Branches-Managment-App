@@ -17,7 +17,7 @@ const SignUpDisabled = () => {
 
         <p className="text-[#64748b] leading-relaxed mb-8">
           An owner account already exists for this system. To maintain security,
-          multiple owner registrations are currently{" "}
+          multiple owner registrations are currently
           <span className="font-semibold text-[#0f172a]">disabled</span>.
         </p>
 

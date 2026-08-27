@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { Sidebar } from "../components/Sidebar";
 import { Users } from "lucide-react";
-import StatCard from "../components/dashboard/DarshboardCard";
 import ResponsiveNav from "../components/ResponsiveNav";
 import DashboardHeader from "../components/dashboard/DashboardHead";
 import DashboardStats from "../components/dashboard/DashboardStats";

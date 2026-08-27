@@ -19,14 +19,6 @@ const CATEGORIES = [
   { value: "other", label: "Other" },
 ];
 
-const INITIAL_FORM_STATE = {
-  name: "",
-  category: "electronics",
-  buyingPrice: "",
-  sellingPrice: "",
-  quantity: "",
-};
-
 const AddProduct = () => {
   const { user } = useAuthContext();
   const { setProducts } = useProductsContext();
@@ -35,7 +27,13 @@ const AddProduct = () => {
   const [error, setError] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
+  const [formData, setFormData] = useState({
+    name: "",
+    category: "electronics",
+    buyingPrice: "",
+    sellingPrice: "",
+    quantity: "",
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -77,7 +75,14 @@ const AddProduct = () => {
 
       toast.success("Product added successfully!");
 
-      setFormData(INITIAL_FORM_STATE);
+      setFormData((prev) => ({
+        ...prev,
+        name: "",
+        category: "electronics",
+        buyingPrice: "",
+        sellingPrice: "",
+        quantity: "",
+      }));
     } catch (err) {
       setError(getFriendlyErrorMessage(err, "general"));
     } finally {

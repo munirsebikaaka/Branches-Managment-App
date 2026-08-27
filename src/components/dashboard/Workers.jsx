@@ -25,11 +25,11 @@ const Workers = ({ onlyWorkers }) => {
           {onlyWorkers.map((worker) => (
             <div
               key={worker.id}
-              className="grid grid-cols-1 items-center lg:grid-cols-2 p-4 border border-[#f1f5f9] rounded-xl hover:border-indigo-200 hover:bg-indigo-50/30 transition cursor-pointer group"
+              className="grid grid-cols-1 items-center lg:grid-cols-2 p-4 border border-[#f1f5f9] rounded-xl hover:border-indigo-200 hover:bg-indigo-50/30 transition cursor-pointer"
               onClick={() => goToBranchDashboard(worker.branchId)}>
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm uppercase group-hover:bg-indigo-100 group-hover:text-indigo-600 transition">
-                  {worker.name.charAt(0)}
+                  {worker.name[0]}
                 </div>
                 <div>
                   <p className="font-semibold text-[#0f172a] text-sm md:text-base capitalize">

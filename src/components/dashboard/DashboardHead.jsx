@@ -10,9 +10,7 @@ const DashboardHeader = ({ children, title }) => {
           </div>
           {title}
         </h2>
-        <p className="text-[#64748b] mt-1 text-sm md:text-base capitalize">
-          {children}
-        </p>
+        <p className="text-[#64748b] mt-1 capitalize">{children}</p>
       </div>
     </div>
   );
