@@ -5,27 +5,37 @@ import Input from "../ui/Input";
 import { toast } from "react-toastify";
 import { useAuthContext } from "../utils/context/CreateAuthContext";
 import { useProductsContext } from "../utils/context/CreateProductContext";
-import { isManageWorkersFormValid } from "../services/form/FormValidations";
+import {
+  createHandleBlur,
+  isManageWorkersFormValid,
+} from "../services/form/FormValidations";
 import { getFriendlyErrorMessage } from "../utils/errorMessages";
 import ResponsiveNav from "../components/ResponsiveNav";
 import NoBranches from "../components/NoBranchesMessage";
 import Error from "../components/Error";
 import LoadingPage from "../components/LoadingPage";
-import { Eye, EyeOff } from "lucide-react";
 import Blur from "../components/Blur";
+import FormsHeader from "../components/FormsHeader";
+import { getNames } from "../services/pages/PagesFunctionalities";
 
+const inputNames = {
+  email: "Email",
+  password: "Password",
+  name: "Name",
+  branchId: "BranchId",
+  phoneNumber: "Number",
+};
 export const ManageWorkers = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     name: "",
     branchId: "",
-    workerId: "",
+    phoneNumber: "",
   });
-
+  const [onBlurErrors, setOnBlurErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const { registerWorker, error } = useAuthContext();
   const [errorMessage, setErrorMessage] = useState("");
   const {
@@ -34,6 +44,7 @@ export const ManageWorkers = () => {
     setWorkers,
     workers,
   } = useProductsContext();
+  const branchNames = getNames(branches);
 
   const emptyBranches = useMemo(() => {
     return branches.filter(
@@ -44,6 +55,15 @@ export const ManageWorkers = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  const handleBlur = createHandleBlur(inputNames, setOnBlurErrors);
+
+  const isSubmitButtonDissabled =
+    formData.email.length < 1 ||
+    formData.password.length < 1 ||
+    formData.name.length < 1 ||
+    formData.branchId.length < 1 ||
+    loading;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,7 +77,7 @@ export const ManageWorkers = () => {
         formData.name,
         formData.branchId,
         "worker",
-        formData.workerId,
+        formData.phoneNumber,
       );
 
       if (createdWorker) {
@@ -71,7 +91,7 @@ export const ManageWorkers = () => {
         password: "",
         name: "",
         branchId: "",
-        workerId: "",
+        phoneNumber: "",
       });
       setErrorMessage("");
     } catch (err) {
@@ -96,31 +116,21 @@ export const ManageWorkers = () => {
     return <NoBranches emptyBranches={emptyBranches} branches={branches} />;
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative">
+    <div className="flex min-h-screen bg-background font-font-family relative">
       <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
 
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      <main className="flex-1 p-6 md:p-12 md:ml-64 transition-all duration-300">
+      <main className="flex-1 p-6 md:p-12 md:ml-64">
         <div className="max-w-2xl mx-auto">
           <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
 
-          <div className="flex flex-col items-center mb-8">
-            <h3 className="text-3xl font-bold text-[#0f172a]">
-              Manage Workers
-            </h3>
-            <p className="text-[#64748b] mt-1">
-              Add new workers and assign them to specific branches.
-            </p>
-          </div>
+          <FormsHeader
+            header={"Manage Workers"}
+            description={"Add new workers and assign them to specific branches"}
+          />
 
-          <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
-            <div className="bg-[#f8fafc] px-8 py-4 border-b border-[#e2e8f0]">
-              <h2 className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider">
-                Worker Registration Form
-              </h2>
-            </div>
-
+          <div className="bg-white rounded-2xl border border-border-color">
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
@@ -131,7 +141,9 @@ export const ManageWorkers = () => {
                     value: formData.name,
                     onChange: handleChange,
                     placeholder: "John Doe",
+                    onBlur: handleBlur,
                   }}
+                  error={onBlurErrors.name}
                 />
                 <Input
                   label={"Email Address"}
@@ -141,20 +153,24 @@ export const ManageWorkers = () => {
                     value: formData.email,
                     onChange: handleChange,
                     placeholder: "test@gmail.com",
+                    onBlur: handleBlur,
                   }}
+                  error={onBlurErrors.email}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
-                  label={"Worker ID / Staff Code"}
+                  label={"Phone Number"}
                   inputConfig={{
-                    type: "text",
-                    name: "workerId",
-                    value: formData.workerId,
+                    type: "number",
+                    name: "phoneNumber",
+                    value: formData.phoneNumber,
                     onChange: handleChange,
-                    placeholder: "W-1002",
+                    placeholder: "07 XXXX XXXX",
+                    onBlur: handleBlur,
                   }}
+                  error={onBlurErrors.phoneNumber}
                 />
 
                 <div>
@@ -165,35 +181,30 @@ export const ManageWorkers = () => {
                     name="branchId"
                     value={formData.branchId}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 bg-white border border-[#e2e8f0] rounded-lg text-[#0f172a] text-sm focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/20 focus:border-[#4f46e5] transition-all">
+                    className="w-full px-4 py-2.5 bg-white border border-border-color rounded-lg text-header-color text-sm focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/20 focus:border-[#4f46e5] transition-all">
                     <option value="">Select Branch</option>
                     {emptyBranches.map((branch) => (
                       <option key={branch.id} value={branch.id}>
-                        {branch.branchName}
+                        {branchNames[branch.id]}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-[#f1f5f9] relative">
+              <div>
                 <Input
                   label={"Password"}
                   inputConfig={{
-                    type: showPassword ? "text" : "password",
+                    type: "password",
                     name: "password",
                     value: formData.password,
                     onChange: handleChange,
                     placeholder: "••••••••",
+                    onBlur: handleBlur,
                   }}
+                  error={onBlurErrors.password}
                 />
-
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-[55px] text-[#94a3b8] hover:text-indigo-600 transition-colors">
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
 
                 <p className="mt-2 text-[11px] text-[#94a3b8]">
                   Workers will be able to change their passwords soon.
@@ -204,7 +215,7 @@ export const ManageWorkers = () => {
                 {errorMessage || error}
               </Error>
 
-              <Button disabled={loading}>
+              <Button disabled={isSubmitButtonDissabled}>
                 {loading ? "Registering..." : "Register Worker"}
               </Button>
             </form>

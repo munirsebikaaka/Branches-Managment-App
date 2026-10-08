@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useProductsContext } from "../../utils/context/CreateProductContext";
 import { useNavigate } from "react-router-dom";
 import { getNames } from "../../services/pages/PagesFunctionalities";
@@ -7,15 +6,15 @@ const Workers = ({ onlyWorkers }) => {
   const navigate = useNavigate();
 
   const { branches } = useProductsContext();
-
-  const getBranchName = useMemo(() => getNames(branches), [branches]);
+  const getBranchName = getNames(branches);
 
   const goToBranchDashboard = (branchId) => {
     navigate(`/dashboard?branchId=${branchId}`);
   };
+
   return (
-    <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6 shadow-sm">
-      <h3 className="text-lg font-bold mb-6 text-[#0f172a]">Workers</h3>
+    <div className="bg-white rounded-2xl border border-border-color p-6 shadow-sm">
+      <h3 className="text-lg font-bold mb-6 text-header-color">Workers</h3>
       {onlyWorkers.length === 0 ? (
         <p className="text-gray-500 text-sm text-center py-4">
           No workers found
@@ -32,17 +31,17 @@ const Workers = ({ onlyWorkers }) => {
                   {worker.name[0]}
                 </div>
                 <div>
-                  <p className="font-semibold text-[#0f172a] text-sm md:text-base capitalize">
+                  <p className="font-semibold text-header-color text-sm md:text-base capitalize">
                     {worker.name}
                   </p>
-                  <p className="text-xs md:text-sm text-[#64748b]">
+                  <p className="text-xs md:text-sm text-header-description">
                     {worker.email}
                   </p>
                 </div>
               </div>
 
               <div className="flex flex-col items-end gap-1 mt-2">
-                <span className="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-2 py-1 rounded-md uppercase">
+                <span className="text-[10px] font-bold text-action-color uppercase">
                   {getBranchName[worker.branchId]}
                 </span>
               </div>
@@ -53,4 +52,5 @@ const Workers = ({ onlyWorkers }) => {
     </div>
   );
 };
+
 export default Workers;

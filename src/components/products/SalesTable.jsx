@@ -1,83 +1,89 @@
-import { useMemo } from "react";
-import { getNames } from "../../services/pages/PagesFunctionalities";
+import { useMemo, useState } from "react";
+import {
+  getNames,
+  handleDeleteProduct,
+} from "../../services/pages/PagesFunctionalities";
+import { formatDateTime } from "../../utils/format";
 import { useProductsContext } from "../../utils/context/CreateProductContext";
+import SaleButton from "../../ui/SaleButton";
+import { Trash2 } from "lucide-react";
 
-const SalesTable = ({ filteredSales }) => {
-  const { branches } = useProductsContext();
+const SalesTable = ({ filteredSales, onViewReceipt }) => {
+  const { branches, setSalesData } = useProductsContext();
 
   const getBranchName = useMemo(() => getNames(branches), [branches]);
+  const [deletingSaleId, setDeletingSaleId] = useState(null);
 
   return (
     <div className="space-y-4">
-      <div className="hidden md:grid md:grid-cols-6 gap-4 px-6 py-4 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl text-xs font-bold text-[#94a3b8] uppercase">
-        <span>Product</span>
-        <span>Qty</span>
-        <span>Price</span>
-        <span>Total</span>
-        <span>Date</span>
-        <span>Branch</span>
-      </div>
-
-      {filteredSales.length === 0 ? (
-        <div className="bg-white p-10 text-center rounded-2xl border border-[#e2e8f0] text-[#64748b]">
+      {filteredSales?.length === 0 ? (
+        <div className="bg-white p-10 text-center rounded-2xl border border-border-color text-[#64748b]">
           No sales found.
         </div>
       ) : (
-        filteredSales.map((sale) => (
-          <div
-            key={sale.id}
-            className="bg-white p-5 md:px-6 md:py-4 rounded-2xl border border-[#e2e8f0] shadow-sm hover:border-[#4f46e5]/30 transition-colors grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-y-3 gap-x-4 items-center">
-            <div className="col-span-2 md:col-span-1">
-              <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
-                Product
-              </p>
-              <p className="font-semibold text-[#0f172a]">{sale.productName}</p>
-            </div>
+        filteredSales?.map((sale) => {
+          const itemCount = sale.items.length;
+          return (
+            <div
+              key={sale.id}
+              className="flex flex-col lg:flex-row lg:justify-between gap-3 bg-white p-5 md:px-6 md:py-4 rounded-2xl border border-border-color shadow-sm hover:border-[#4f46e5]/30 transition-colors">
+              <div>
+                <p className="text-[10px] uppercase font-bold text-[#94a3b8]">
+                  Date & Time
+                </p>
+                <p className="text-[#475569] text-sm">
+                  {formatDateTime(sale.createdAt)}
+                </p>
+              </div>
 
-            <div>
-              <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
-                Qty
-              </p>
-              <p className="text-[#475569] text-sm">{sale.quantity} units</p>
-            </div>
+              <div>
+                <p className="text-[10px] uppercase font-bold text-[#94a3b8]">
+                  Items
+                </p>
+                <p className="text-[#475569] text-sm font-medium">
+                  {itemCount} products
+                </p>
+              </div>
 
-            <div>
-              <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
-                Price
-              </p>
-              <p className="text-[#475569] text-sm">${sale.price}</p>
-            </div>
+              <div>
+                <p className="text-[10px] uppercase font-bold text-[#94a3b8] ">
+                  Branch
+                </p>
+                <span className="text-[#475569] text-sm">
+                  {getBranchName[sale.branchId]}
+                </span>
+              </div>
 
-            <div>
-              <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
-                Total
-              </p>
-              <p className="text-[#4f46e5] font-semibold text-sm">
-                ${sale.total}
-              </p>
+              <div className="flex items-center justify-end gap-2">
+                <SaleButton
+                  onClick={() => onViewReceipt && onViewReceipt(sale)}
+                  text={"View Receipt"}
+                />
+                <button
+                  disabled={deletingSaleId === sale.id}
+                  onClick={() =>
+                    handleDeleteProduct(
+                      sale,
+                      setSalesData,
+                      "sales",
+                      setDeletingSaleId,
+                    )
+                  }
+                  className="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Delete sale">
+                  {deletingSaleId === sale.id ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
+                  ) : (
+                    <Trash2 size={16} aria-hidden="true" />
+                  )}
+                </button>
+              </div>
             </div>
-
-            <div>
-              <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
-                Date
-              </p>
-              <p className="text-[#475569] text-sm">
-                {new Date(sale.createdAt).toLocaleDateString()}
-              </p>
-            </div>
-
-            <div className="col-span-2 md:col-span-1">
-              <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
-                Branch
-              </p>
-              <span className="inline-block bg-slate-100 text-[#64748b] px-2 py-1 rounded text-[11px] font-medium">
-                {getBranchName[sale.branchId]}
-              </span>
-            </div>
-          </div>
-        ))
+          );
+        })
       )}
     </div>
   );
 };
+
 export default SalesTable;

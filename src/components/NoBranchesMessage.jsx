@@ -5,10 +5,10 @@ const NoBranches = ({ emptyBranches, branches }) => {
   const noBranchesYet = branches.length <= 0;
   const isEmptyBranchesAvailable = emptyBranches.length >= 1;
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center font-['Outfit',_sans-serif]">
+    <div className="flex flex-col items-center justify-center py-20 text-center font-font-family">
       <div className="mb-6">
         <MapPinOff className="text-[#94a3b8] mx-auto mb-4" size={48} />
-        <h3 className="text-xl font-bold text-[#0f172a]">
+        <h3 className="text-xl font-bold text-header-color">
           {noBranchesYet
             ? "No Branches Available"
             : !isEmptyBranchesAvailable && "All Branches are Occupied"}{" "}

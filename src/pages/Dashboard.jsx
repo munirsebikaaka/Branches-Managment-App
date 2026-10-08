@@ -16,12 +16,15 @@ import RecentSales from "../components/dashboard/RecentSales";
 import OwnerBackButton from "../ui/OwnerBackButton";
 import FetchedError from "../components/FefchError";
 import Blur from "../components/Blur";
+import ReceiptPreview from "../components/ReceiptPreview";
+import LowStockAlert from "../components/dashboard/LowStockAlert";
 
 const Dashboard = () => {
   const { user } = useAuthContext();
   const { products, salesData, chargingData, loading, branches, workers } =
     useProductsContext();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -76,22 +79,29 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative">
+    <div className="flex min-h-screen bg-background font-font-family relative">
       <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-      <main className="flex-1 p-4 md:p-12 md:ml-64 transition-all duration-300">
+      <main className="flex-1 p-4 md:p-12 md:ml-64">
         <div className="max-w-6xl mx-auto">
           <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
           <FetchedError />
 
           <div className="mb-8">
             <DashboardHeader
-              title={`${getBranchName[activeBranchId] || "Branch"} Dashboard`}>
+              title={`${getBranchName[activeBranchId]} Dashboard`}>
               Worker:{" "}
-              <span className="text-[#4f46e5] font-semibold bg-indigo-50 px-2 py-0.5 rounded">
+              <span className="text-header-color font-semibold">
                 {workerName}
               </span>
             </DashboardHeader>
+          </div>
+
+          <div className="mb-8">
+            <LowStockAlert
+              products={filteredProducts}
+              branchId={activeBranchId}
+            />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 mb-8">
@@ -113,10 +123,20 @@ const Dashboard = () => {
             statsCountTitle={"Inventory"}
             statsCountIcon={<ArchiveRestore />}
           />
-          <RecentSales filteredSales={filteredSales} />
+          <RecentSales
+            filteredSales={filteredSales}
+            onViewReceipt={setSelectedReceipt}
+          />
           <OwnerBackButton user={user} />
         </div>
       </main>
+
+      {selectedReceipt && (
+        <ReceiptPreview
+          sale={selectedReceipt}
+          onClose={() => setSelectedReceipt(null)}
+        />
+      )}
     </div>
   );
 };

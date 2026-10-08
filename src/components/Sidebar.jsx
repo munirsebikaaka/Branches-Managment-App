@@ -22,11 +22,10 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
     navigate("/login");
   };
 
-  const camelCaseUserName =
-    user?.name
-      ?.split(" ")
-      .map((word) => word[0].toUpperCase() + word.slice(1))
-      .join(" ") || "User";
+  const camelCaseUserName = user?.name
+    ?.split(" ")
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join(" ");
 
   const isActive = (path) => location.pathname === path;
 
@@ -35,26 +34,28 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
     text-sm font-medium
     ${
       isActive(path)
-        ? "bg-[#4f46e5] text-white shadow-lg shadow-indigo-200"
-        : "text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#0f172a]"
+        ? "bg-action-color text-white shadow-lg shadow-indigo-200"
+        : "text-action-color hover:bg-[#f1f5f9]"
     }
   `;
 
   return (
     <aside
       className={`
-        fixed top-0 bottom-0 z-[50] w-64 bg-white border-r border-[#e2e8f0] 
-        flex flex-col font-['Outfit',_sans-serif] transition-all duration-300 ease-in-out
+        fixed top-0 bottom-0 z-[50] w-64 bg-white border-r border-border-color 
+        flex flex-col font-font-family transition-all duration-300 ease-in-out
         ${isOpen ? "left-0" : "-left-full"} 
         md:left-0
       `}>
-      <div className="px-6 py-4 border-b border-[#e2e8f0] flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-border-color flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 bg-[#4f46e5] rounded-md flex items-center justify-center text-white font-bold">
+            <div className="w-8 h-8 bg-action-color rounded-md flex items-center justify-center text-white font-bold">
               A
             </div>
-            <h2 className="text-sm font-bold text-[#0f172a]">Auntie's Shops</h2>
+            <h2 className="text-sm font-bold text-header-color">
+              Auntie's Shops
+            </h2>
           </div>
           <p className="text-[10px] uppercase font-bold text-[#94a3b8] px-1">
             Shop's System
@@ -69,14 +70,14 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
       </div>
 
       <div className="mx-4 my-4 p-4 bg-[#f8fafc] rounded-xl border border-[#f1f5f9] flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-[#e2e8f0] flex items-center justify-center text-[#475569] font-semibold uppercase">
+        <div className="w-10 h-10 rounded-full bg-border-color flex items-center justify-center text-[#475569] font-semibold uppercase">
           {user?.name?.[0]}
         </div>
         <div className="overflow-hidden">
-          <p className="text-sm font-semibold text-[#0f172a] truncate">
+          <p className="text-sm font-semibold text-header-color">
             {camelCaseUserName}
           </p>
-          <span className="text-[11px] font-medium text-[#4f46e5] bg-indigo-50 px-1.5 py-0.5 rounded uppercase">
+          <span className="text-[11px] font-medium text-action-color bg-indigo-50 px-1.5 py-0.5 rounded uppercase">
             {user?.role}
           </span>
         </div>
@@ -92,28 +93,39 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
           <LayoutDashboard size={18} /> Dashboard
         </Link>
 
-        {user?.role === "worker" && (
-          <>
-            <Link
-              className={navLinkClass("/add-product")}
-              to="/add-product"
-              onClick={() => setIsOpen(false)}>
-              <BadgePlus size={18} /> Add Product
-            </Link>
-            <Link
-              className={navLinkClass("/record-sale")}
-              to="/record-sale"
-              onClick={() => setIsOpen(false)}>
-              <CircleDollarSign size={18} /> Record Sale
-            </Link>
-            <Link
-              className={navLinkClass("/record-charging")}
-              to="/record-charging"
-              onClick={() => setIsOpen(false)}>
-              <BatteryCharging size={18} /> Record Charging
-            </Link>
-          </>
+        {user?.role === "owner" && (
+          <Link
+            className={navLinkClass("/add-product")}
+            to="/add-product"
+            onClick={() => setIsOpen(false)}>
+            <BadgePlus size={18} /> Add Product
+          </Link>
         )}
+
+        {user?.role === "worker" && (
+          <Link
+            className={navLinkClass("/record-sale")}
+            to="/record-sale"
+            onClick={() => setIsOpen(false)}>
+            <CircleDollarSign size={18} /> Record Sale
+          </Link>
+        )}
+
+        {user?.role === "worker" && (
+          <Link
+            className={navLinkClass("/record-charging")}
+            to="/record-charging"
+            onClick={() => setIsOpen(false)}>
+            <BatteryCharging size={18} /> Record Charging
+          </Link>
+        )}
+
+        <Link
+          className={navLinkClass("/charging-history")}
+          to="/charging-history"
+          onClick={() => setIsOpen(false)}>
+          <BatteryCharging size={18} /> Charging History
+        </Link>
 
         <Link
           className={navLinkClass("/products")}
@@ -153,7 +165,7 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
       <div className="p-3 border-t border-[#f1f5f9]">
         <button
           onClick={handleLogout}
-          className="w-full py-2.5 text-sm font-semibold text-[#ef4444] hover:bg-red-50 rounded-lg transition-colors">
+          className="w-full py-2.5 text-sm font-semibold text-error-color hover:bg-red-50 rounded-lg transition-colors">
           Logout
         </button>
       </div>

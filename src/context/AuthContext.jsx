@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }) => {
     name,
     branchId,
     role = "worker",
-    workerId,
+    phoneNumber,
   ) => {
     setError(null);
     try {
@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }) => {
         email,
         role,
         branchId,
-        workerId,
+        phoneNumber,
         createdAt: new Date().toISOString(),
       };
 

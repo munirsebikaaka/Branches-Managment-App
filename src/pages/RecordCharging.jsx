@@ -1,140 +1,172 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuthContext } from "../utils/context/CreateAuthContext";
-import { Sidebar } from "../components/Sidebar";
-import { postData } from "../utils/api";
-import Button from "../ui/Button";
-import Input from "../ui/Input";
 import { toast } from "react-toastify";
-import { isRecordChargingFormValid } from "../services/form/FormValidations";
-import { getFriendlyErrorMessage } from "../utils/errorMessages";
-import { Menu } from "lucide-react";
+import { Sidebar } from "../components/Sidebar";
 import ResponsiveNav from "../components/ResponsiveNav";
-import Error from "../components/Error";
-import { useProductsContext } from "../utils/context/CreateProductContext";
 import Blur from "../components/Blur";
+import LoadingPage from "../components/LoadingPage";
+import FetchedError from "../components/FefchError";
+import Error from "../components/Error";
+import Input from "../ui/Input";
+import Button from "../ui/Button";
+import { useAuthContext } from "../utils/context/CreateAuthContext";
+import { useProductsContext } from "../utils/context/CreateProductContext";
+import { postData } from "../utils/api";
+import { getFriendlyErrorMessage } from "../utils/errorMessages";
+import {
+  createHandleBlur,
+  isPhoneChargingFormValid,
+} from "../services/form/FormValidations";
+import FormsHeader from "../components/FormsHeader";
 
+const inputNames = {
+  customerName: "Name",
+  contact: "Contact",
+  deviceModel: "Device model",
+  price: "Price",
+};
 const RecordCharging = () => {
   const { user } = useAuthContext();
-  const { setChargingData } = useProductsContext();
-
-  const navigate = useNavigate();
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+  const { setChargingData, loading } = useProductsContext();
   const [formData, setFormData] = useState({
-    phonesCharged: "",
-    pricePerPhone: "",
+    customerName: "",
+    contact: "",
+    deviceModel: "",
+    price: "",
   });
+
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [onBlurErrors, setOnBlurErrors] = useState({});
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+  const handleBlur = createHandleBlur(inputNames, setOnBlurErrors);
+
+  const isSubmitButtonDissabled =
+    formData.customerName.length < 1 ||
+    formData.contact.length < 1 ||
+    formData.deviceModel.length < 1 ||
+    formData.price.length < 1 ||
+    submitting ||
+    loading;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!isRecordChargingFormValid(formData, setError)) return;
-
-    setLoading(true);
     setError("");
-
+    if (!isPhoneChargingFormValid(formData, setError)) return;
+    setSubmitting(true);
     try {
-      const total = formData.phonesCharged * formData.pricePerPhone;
-
-      const charging = {
-        phonesCharged: +formData.phonesCharged,
-        pricePerPhone: +formData.pricePerPhone,
-        total,
+      const record = {
+        customerName: formData.customerName.trim(),
+        contact: formData.contact.trim(),
+        deviceModel: formData.deviceModel.trim(),
+        price: +formData.price,
         branchId: user?.branchId,
+        receivedAt: new Date().toISOString(),
         createdBy: user?.id,
-        createdAt: new Date().toISOString(),
+        status: "at_shop",
       };
-
-      const response = await postData(charging, "charging");
-
-      const changingData = {
-        id: response.data.createdAt || Date.now().toString(),
-        ...charging,
+      const response = await postData(record, "charging");
+      const createdRecord = {
+        id: response?.data?.name || Date.now().toString(),
+        ...record,
       };
-
-      setChargingData((prev) => [changingData, ...prev]);
-
-      toast.success("Charging activity recorded successfully!");
-
-      setFormData({
-        phonesCharged: "",
-        pricePerPhone: "",
-      });
-
-      navigate("/dashboard");
+      setChargingData((prev) => [createdRecord, ...prev]);
+      setFormData((prev) => ({
+        ...prev,
+        customerName: "",
+        contact: "",
+        deviceModel: "",
+        price: "",
+      }));
+      toast.success(`Phone recorded successfully.`);
     } catch (err) {
       setError(getFriendlyErrorMessage(err, "general"));
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
+  if (loading)
+    return (
+      <LoadingPage
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+      />
+    );
+
   return (
-    <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative">
+    <div className="flex min-h-screen bg-[#f8fafc] font-font-family relative">
       <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
-
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-
-      <main className="flex-1 p-6 md:p-12 md:ml-64 transition-all duration-300">
-        <div className="max-w-2xl mx-auto">
+      <main className="flex-1 p-4 md:p-12 md:ml-64">
+        <div className="max-w-2xl mx-auto space-y-6">
           <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
+          <FetchedError />
 
-          <div className="flex flex-col items-center mb-8">
-            <h3 className="text-3xl font-bold text-[#0f172a]">
-              Record Phone Charging
-            </h3>
-            <p className="text-[#64748b] mt-1">
-              Log the daily charging services provided at your branch.
-            </p>
-          </div>
+          <FormsHeader
+            header={"Record a phone details for charging"}
+            description={
+              "Get all the requested information for security purposes"
+            }
+          />
 
-          <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
-            <div className="bg-[#f8fafc] px-8 py-4 border-b border-[#e2e8f0]">
-              <h2 className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider">
-                Service Details
-              </h2>
-            </div>
-
+          <div className="bg-white rounded-2xl border border-border-color shadow-sm overflow-hidden">
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <Input
-                  label={"Phones Charged"}
+                  label="Customer name"
                   inputConfig={{
-                    type: "number",
-                    name: "phonesCharged",
-                    value: formData.phonesCharged,
+                    name: "customerName",
+                    value: formData.customerName,
                     onChange: handleChange,
-                    placeholder: "e.g., 10",
+                    placeholder: "e.g. munir",
+                    onBlur: handleBlur,
                   }}
+                  error={onBlurErrors.customerName}
+                />
+                <Input
+                  label="Phone number"
+                  inputConfig={{
+                    name: "contact",
+                    value: formData.contact,
+                    onChange: handleChange,
+                    placeholder: "e.g. 070XXXXXXX",
+                    onBlur: handleBlur,
+                  }}
+                  error={onBlurErrors.contact}
+                />
+                <Input
+                  label="Device model"
+                  inputConfig={{
+                    name: "deviceModel",
+                    value: formData.deviceModel,
+                    onChange: handleChange,
+                    placeholder: "e.g. Samsung NOTE10",
+                    onBlur: handleBlur,
+                  }}
+                  error={onBlurErrors.deviceModel}
                 />
 
                 <Input
-                  label={"Price Per Phone ($)"}
+                  label="Charging price (UGX)"
                   inputConfig={{
                     type: "number",
-                    name: "pricePerPhone",
-                    value: formData.pricePerPhone,
+                    name: "price",
+                    value: formData.price,
                     onChange: handleChange,
-                    placeholder: "0.00",
-                    step: "0.01",
+                    placeholder: "500",
+                    onBlur: handleBlur,
                   }}
+                  error={onBlurErrors.price}
                 />
               </div>
-
               <Error message={error}>{error}</Error>
-
-              <Button disabled={loading}>
-                {loading ? "Saving Activity..." : "Record Charging"}
+              <Button disabled={isSubmitButtonDissabled}>
+                {submitting ? "Submitting..." : "Submit phone details"}
               </Button>
             </form>
           </div>

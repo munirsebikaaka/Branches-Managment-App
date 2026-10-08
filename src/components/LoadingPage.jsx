@@ -3,7 +3,7 @@ import { Sidebar } from "./Sidebar";
 
 const LoadingPage = ({ isSidebarOpen, setIsSidebarOpen }) => {
   return (
-    <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative overflow-hidden">
+    <div className="flex min-h-screen bg-[#f8fafc] font-font-family relative overflow-hidden">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <div className="flex-1 md:ml-64 flex flex-col items-center justify-center z-10">

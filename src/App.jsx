@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import AddProduct from "./pages/AddProduct";
 import RecordSale from "./pages/RecordSale";
 import RecordCharging from "./pages/RecordCharging";
+import ChargingHistory from "./pages/ChargingHistory";
 import { ManageWorkers } from "./pages/ManageWorkers";
 import { ToastContainer } from "react-toastify";
 import AddBranch from "./pages/AddBranch";
@@ -26,7 +27,7 @@ function App() {
         <Route
           path="/add-product"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="owner">
               <AddProduct />
             </ProtectedRoute>
           }
@@ -44,6 +45,14 @@ function App() {
           element={
             <ProtectedRoute>
               <RecordCharging />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/charging-history"
+          element={
+            <ProtectedRoute>
+              <ChargingHistory />
             </ProtectedRoute>
           }
         />

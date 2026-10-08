@@ -7,38 +7,30 @@ import ResponsiveNav from "../components/ResponsiveNav";
 import LoadingPage from "../components/LoadingPage";
 import OwnerBackButton from "../ui/OwnerBackButton";
 import FetchedError from "../components/FefchError";
-import { getNames } from "../services/pages/PagesFunctionalities";
+import {
+  filterAppData,
+  getNames,
+  handleDeleteProduct,
+} from "../services/pages/PagesFunctionalities";
 import Blur from "../components/Blur";
+import {  Trash2 } from "lucide-react";
+import Search from "../components/Search";
 
 const Products = () => {
   const { user } = useAuthContext();
-  const { products, loading, branches } = useProductsContext();
+  const { products, setProducts, loading, branches } = useProductsContext();
   const [search, setSearch] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [deletingProductId, setDeletingProductId] = useState(null);
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const urlBranchId = queryParams.get("branchId");
 
   const getBranchName = useMemo(() => getNames(branches), [branches]);
-
   const filteredProducts = useMemo(() => {
-    let filtered = products;
-
-    if (user?.role === "owner" && urlBranchId) {
-      filtered = products.filter((p) => p.branchId === urlBranchId);
-    } else if (user?.role === "worker") {
-      filtered = products.filter((p) => p.branchId === user.branchId);
-    }
-
-    if (search.trim()) {
-      filtered = filtered.filter((product) =>
-        product.name?.toLowerCase().includes(search.toLowerCase()),
-      );
-    }
-
-    return filtered;
-  }, [products, user, search, urlBranchId]);
+    return filterAppData(products, user, urlBranchId, getBranchName, search);
+  }, [products, user, search, urlBranchId, getBranchName]);
 
   if (loading) {
     return (
@@ -50,7 +42,7 @@ const Products = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative">
+    <div className="flex min-h-screen bg-background font-font-family relative">
       <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
 
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
@@ -58,63 +50,38 @@ const Products = () => {
         <div className="w-full p-6 md:p-10 lg:p-12 space-y-10">
           <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
 
-          <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold text-[#0f172a]">
-                Products Inventory
-              </h2>
-              <p className="text-[#64748b] text-sm capitalize">
-                {user?.role === "owner"
-                  ? urlBranchId
-                    ? `Viewing Branch: ${getBranchName[urlBranchId] || "..."}`
-                    : "Viewing all branches"
-                  : `Branch: ${getBranchName[user?.branchId] || "..."}`}
-              </p>
-            </div>
-
-            <input
-              type="text"
-              placeholder="Search product..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full md:w-72 px-4 py-2.5 border border-[#e2e8f0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/20 bg-white"
-            />
-          </div>
+          <Search
+            title={"Products history"}
+            urlBranchId={urlBranchId}
+            getBranchName={getBranchName}
+            search={search}
+            setSearch={setSearch}
+          />
 
           <FetchedError />
 
           <div className="space-y-4">
-            <div
-              className={`hidden md:grid gap-4 px-6 py-4 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl text-xs text-[#94a3b8] uppercase ${user?.role === "owner" ? "grid-cols-6" : "grid-cols-5"}`}>
-              <span>Name</span>
-              <span>Category</span>
-              <span>Stock</span>
-              <span> Price</span>
-              <span>Sell Price</span>
-              {user?.role === "owner" && <span>Branch</span>}
-            </div>
-
-            <div className="space-y-3">
+            <div className="space-y-4">
               {filteredProducts.length === 0 ? (
-                <div className="bg-white p-10 text-center rounded-2xl border border-[#e2e8f0] text-[#64748b]">
+                <div className="bg-white p-10 text-center rounded-2xl border border-border-color text-[#64748b]">
                   No products found.
                 </div>
               ) : (
                 filteredProducts.map((product) => (
                   <div
                     key={product.id}
-                    className={`bg-white p-5  md:px-6 md:py-4 rounded-2xl border border-[#e2e8f0] shadow-sm hover:border-[#4f46e5]/30 transition-colors grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4 items-center justify-center  ${user?.role === "owner" ? "md:grid-cols-6" : "md:grid-cols-5"}`}>
-                    <div className="col-span-2 md:col-span-1">
-                      <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
-                        Name
+                    className="flex flex-col gap-3 rounded-2xl border border-border-color bg-white p-5 shadow-sm transition-colors hover:border-action-color/30 lg:flex-row lg:items-center lg:justify-between md:px-6 md:py-4">
+                    <div className="min-w-0 lg:flex-1">
+                      <p className="text-[10px] uppercase font-bold text-[#94a3b8]">
+                        Product
                       </p>
-                      <p className="font-semibold text-[#0f172a]">
+                      <p className="font-semibold text-header-color">
                         {product.name}
                       </p>
                     </div>
 
-                    <div>
-                      <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
+                    <div className="lg:w-32">
+                      <p className="text-[10px] uppercase font-bold text-[#94a3b8]">
                         Category
                       </p>
                       <p className="text-[#475569] text-sm">
@@ -122,8 +89,8 @@ const Products = () => {
                       </p>
                     </div>
 
-                    <div>
-                      <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
+                    <div className="lg:w-24">
+                      <p className="text-[10px] uppercase font-bold text-[#94a3b8]">
                         Stock
                       </p>
                       <p
@@ -132,34 +99,54 @@ const Products = () => {
                       </p>
                     </div>
 
-                    <div>
-                      <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
-                        Price
-                      </p>
-                      <p className="text-[#475569] text-sm md:text-xs lg:text-sm">
-                        UGX {product.buyingPrice}
-                      </p>
-                    </div>
+                    {user?.role === "owner" && (
+                      <div className="lg:w-32">
+                        <p className="text-[10px] uppercase font-bold text-[#94a3b8]">
+                          Cost Price
+                        </p>
+                        <p className="text-[#475569] text-sm md:text-xs lg:text-sm">
+                          UGX {product.buyingPrice}
+                        </p>
+                      </div>
+                    )}
 
-                    <div>
-                      <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
+                    <div className="lg:w-32">
+                      <p className="text-[10px] uppercase font-bold text-[#94a3b8]">
                         Sell Price
                       </p>
-                      <p className="text-[#4f46e5] font-semibold text-sm md:text-xs lg:text-sm">
+                      <p className="text-[#475569] text-sm md:text-xs lg:text-sm">
                         UGX {product.sellingPrice}
                       </p>
                     </div>
 
                     {user?.role === "owner" && (
-                      <div className="col-span-2 md:col-span-1 md:text-left">
-                        <p className="text-[10px] uppercase font-bold text-[#94a3b8] md:hidden">
+                      <div className="lg:w-32 lg:text-left">
+                        <p className="text-[10px] uppercase font-bold text-[#94a3b8]">
                           Branch
                         </p>
                         <span className="inline-block bg-slate-100 text-[#64748b] px-2 py-1 rounded text-[11px] font-medium">
-                          {getBranchName[product.branchId] || "Unknown"}
+                          {getBranchName[product.branchId]}
                         </span>
                       </div>
                     )}
+
+                    <button
+                      disabled={deletingProductId === product.id}
+                      onClick={() =>
+                        handleDeleteProduct(
+                          product,
+                          setProducts,
+                          "products",
+                          setDeletingProductId,
+                        )
+                      }
+                      className="self-end rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 lg:self-auto">
+                      {deletingProductId === product.id ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
+                      ) : (
+                        <Trash2 size={16} aria-hidden="true" />
+                      )}
+                    </button>
                   </div>
                 ))
               )}

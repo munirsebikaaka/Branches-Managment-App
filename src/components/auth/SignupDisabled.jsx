@@ -3,8 +3,8 @@ import { ShieldAlert, MoveLeft } from "lucide-react";
 
 const SignUpDisabled = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] font-['Outfit',_sans-serif] p-6">
-      <div className="w-full max-w-md bg-white rounded-[2rem] border border-[#e2e8f0] shadow-2xl shadow-indigo-100/50 p-10 z-10 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-background font-font-family p-6">
+      <div className="w-full max-w-md bg-white rounded-[2rem] border border-border-color shadow-2xl shadow-indigo-100/50 p-10 z-10 text-center">
         <div className="flex flex-col items-center mb-6">
           <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mb-4">
             <ShieldAlert className="text-amber-600" size={32} />

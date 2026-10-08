@@ -1,12 +1,10 @@
-export const isLoginFormValid = (values, setLocalError) => {
+export const isLoginFormValid = (values) => {
   const { email, password } = values;
 
   if (!email.trim()) {
-    setLocalError("Please enter your email");
     return false;
   }
   if (!password.trim()) {
-    setLocalError("Please enter your password");
     return false;
   }
   return true;
@@ -14,15 +12,12 @@ export const isLoginFormValid = (values, setLocalError) => {
 
 export const isSignUpFormValid = (formData, setValidationError) => {
   if (!formData.name.trim()) {
-    setValidationError("Please enter your full name");
     return false;
   }
   if (!formData.email.trim()) {
-    setValidationError("Please enter your email");
     return false;
   }
   if (!formData.password.trim()) {
-    setValidationError("Please enter a password");
     return false;
   }
   if (!formData.confirmPassword.trim()) {
@@ -38,9 +33,12 @@ export const isSignUpFormValid = (formData, setValidationError) => {
 
 export const isAddProductsFormValid = (formData, setErrorMessage) => {
   if (!formData.name.trim()) {
-    setErrorMessage("Product name is required");
     return false;
   }
+  if (!formData.category?.trim()) {
+    return false;
+  }
+
   if (!formData.buyingPrice || formData.buyingPrice < 0) {
     setErrorMessage("Enter a valid buying price");
     return false;
@@ -58,7 +56,7 @@ export const isAddProductsFormValid = (formData, setErrorMessage) => {
 
 export const isRecordSaleFormValid = (
   formData,
-  selectedProduct,
+  availableProducts,
   setErrorMessage,
 ) => {
   if (!formData.productId) {
@@ -67,7 +65,7 @@ export const isRecordSaleFormValid = (
   }
 
   if (!formData.quantity || formData.quantity <= 0) {
-    setErrorMessage("Enter valid quantity");
+    setErrorMessage("Quantity MUST be greater that zero (0)");
     return false;
   }
 
@@ -76,7 +74,7 @@ export const isRecordSaleFormValid = (
     return false;
   }
 
-  if (formData.quantity > selectedProduct.quantity) {
+  if (formData.quantity > availableProducts.quantity) {
     setErrorMessage("Not enough stock available");
     return false;
   }
@@ -125,4 +123,32 @@ export const isManageWorkersFormValid = (formData, setErrorMessage) => {
     return false;
   }
   return true;
+};
+
+export const isPhoneChargingFormValid = (formData, setError) => {
+  if (!formData.customerName.trim()) {
+    setError("Customer name is required.");
+    return;
+  }
+  if (!formData.deviceModel.trim()) {
+    setError("Phone model is required.");
+    return;
+  }
+  if (+formData.price <= 0) {
+    setError("Enter a valid charging price.");
+    return;
+  }
+  return true;
+};
+
+export const createHandleBlur = (fieldNames, setErrors) => {
+  return (e) => {
+    const { name, value } = e.target;
+    if (!value.trim()) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: `${fieldNames[name]} is required!`,
+      }));
+    }
+  };
 };

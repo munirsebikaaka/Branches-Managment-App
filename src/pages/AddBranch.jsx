@@ -6,12 +6,20 @@ import { postData } from "../utils/api";
 import { toast } from "react-toastify";
 import { useAuthContext } from "../utils/context/CreateAuthContext";
 import { useProductsContext } from "../utils/context/CreateProductContext";
-import { isAddBranchFormValid } from "../services/form/FormValidations";
+import {
+  createHandleBlur,
+  isAddBranchFormValid,
+} from "../services/form/FormValidations";
 import { getFriendlyErrorMessage } from "../utils/errorMessages";
 import ResponsiveNav from "../components/ResponsiveNav";
 import Error from "../components/Error";
 import Blur from "../components/Blur";
+import FormsHeader from "../components/FormsHeader";
 
+const inputNames = {
+  name: "Branch name",
+  location: "Location",
+};
 const AddBranch = () => {
   const { user } = useAuthContext();
   const { setBranches } = useProductsContext();
@@ -23,11 +31,17 @@ const AddBranch = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [onBlurErrors, setOnBlurErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+
+  const handleBlur = createHandleBlur(inputNames, setOnBlurErrors);
+
+  const isSubmitButtonDissabled =
+    formData.name.length < 1 || formData.location.length < 1 || loading;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -65,28 +79,23 @@ const AddBranch = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative">
+    <div className="flex min-h-screen bg-background font-font-family relative">
       <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
 
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      <main className="flex-1 p-6 md:p-12 md:ml-64 transition-all duration-300">
-        <div className="max-w-4xl mx-auto">
+      <main className="flex-1 p-6 md:p-12 md:ml-64">
+        <div className="max-w-2xl mx-auto">
           <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
+          <FormsHeader
+            header={"Add New Branch"}
+            description={
+              "Expand your business by adding a new branch location."
+            }
+          />
 
-          <div className="bg-white rounded-3xl shadow-sm border border-[#e2e8f0] p-8 md:p-12">
-            <div className="flex flex-col items-center mb-10">
-              <h3 className="text-2xl md:text-3xl font-bold text-[#0f172a]">
-                Add New Branch
-              </h3>
-              <p className="text-[#64748b] mt-3">
-                Expand your business by adding a new branch location.
-              </p>
-            </div>
-
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-6 max-w-lg mx-auto">
+          <div className="bg-white rounded-2xl border border-border-color p-8">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <Input
                 label="Branch Name"
                 inputConfig={{
@@ -94,8 +103,10 @@ const AddBranch = () => {
                   name: "name",
                   value: formData.name,
                   onChange: handleChange,
-                  placeholder: "e.g Kasubi Store",
+                  placeholder: "e.g Kibizi branch",
+                  onBlur: handleBlur,
                 }}
+                error={onBlurErrors.name}
               />
 
               <Input
@@ -105,16 +116,17 @@ const AddBranch = () => {
                   name: "location",
                   value: formData.location,
                   onChange: handleChange,
-                  placeholder: "e.g Kampala, Uganda",
+                  placeholder: "e.g Kasubi",
+                  onBlur: handleBlur,
                 }}
+                error={onBlurErrors.location}
               />
 
               <Error message={errorMessage}>{errorMessage}</Error>
-              <div className={!errorMessage && "pt-4"}>
-                <Button disabled={loading}>
-                  {loading ? "Adding Branch..." : "Add Branch"}
-                </Button>
-              </div>
+
+              <Button disabled={isSubmitButtonDissabled}>
+                {loading ? "Adding Branch..." : "Add Branch"}
+              </Button>
             </form>
           </div>
         </div>

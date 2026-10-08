@@ -1,17 +1,16 @@
 import axios from "axios";
 import { getFriendlyErrorMessage } from "./errorMessages";
 
-const FETCHING_DATA_URL =
-  "https://auntie-s-products-default-rtdb.firebaseio.com";
+const DATABASE_URL = import.meta.env.VITE_FIREBASE_DATABASE_URL;
 
 export const postData = (data, endPoint) => {
-  return axios.post(`${FETCHING_DATA_URL}/${endPoint}.json`, data);
+  return axios.post(`${DATABASE_URL}/${endPoint}.json`, data);
 };
 
-export async function fetchData(setErrorMessage, endPoint) {
+export const fetchData = async (setErrorMessage, endPoint) => {
   if (setErrorMessage) setErrorMessage("");
   try {
-    const response = await axios.get(`${FETCHING_DATA_URL}/${endPoint}.json`);
+    const response = await axios.get(`${DATABASE_URL}/${endPoint}.json`);
     const data = response.data || {};
     const appData = [];
     for (const key in data) {
@@ -28,14 +27,11 @@ export async function fetchData(setErrorMessage, endPoint) {
     }
     return [];
   }
-}
+};
 export const updateData = (endPoint, id, updatedData) => {
-  return axios.patch(
-    `${FETCHING_DATA_URL}/${endPoint}/${id}.json`,
-    updatedData,
-  );
+  return axios.patch(`${DATABASE_URL}/${endPoint}/${id}.json`, updatedData);
 };
 
 export const deleteData = (endPoint, id) => {
-  return axios.delete(`${FETCHING_DATA_URL}/${endPoint}/${id}.json`);
+  return axios.delete(`${DATABASE_URL}/${endPoint}/${id}.json`);
 };

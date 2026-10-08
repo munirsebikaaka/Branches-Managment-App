@@ -1,18 +1,19 @@
 @import "tailwindcss";
 
-body {
-  background-color: #f8fafc;
-}
-
-a {
-  color: #667eea;
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
+@theme {
+  --color-background: #f8fafc;
+  --color-header-color: #0f172a;
+  --color-header-description: #64748b;
+  --color-action-color: #4f46e5;
+  --color-border-color: #e2e8f0;
+  --color-error-color: #ef4444;
+  --font-font-family: Outfit, sans-serif;
 }
 
 button {
   cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
 }

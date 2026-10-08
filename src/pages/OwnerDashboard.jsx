@@ -11,10 +11,14 @@ import Workers from "../components/dashboard/Workers";
 import FetchedError from "../components/FefchError";
 import RecentSales from "../components/dashboard/RecentSales";
 import Blur from "../components/Blur";
+import ReceiptPreview from "../components/ReceiptPreview";
+import LowStockAlert from "../components/dashboard/LowStockAlert";
 
 const OwnerDashboard = () => {
-  const { salesData, chargingData, loading, workers } = useProductsContext();
+  const { products, salesData, chargingData, loading, workers } =
+    useProductsContext();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
 
   const onlyWorkers = useMemo(() => {
     return workers.filter((w) => w.role === "worker");
@@ -35,14 +39,14 @@ const OwnerDashboard = () => {
 
   return (
     <>
-      <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative">
+      <div className="flex min-h-screen bg-background font-font-family relative">
         <Blur
           setIsSidebarOpen={setIsSidebarOpen}
           isSidebarOpen={isSidebarOpen}
         />
 
         <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-        <main className="flex-1 p-6 md:p-12 md:ml-64 transition-all duration-300">
+        <main className="flex-1 p-6 md:p-12 md:ml-64">
           <div className="mx-auto space-y-10">
             <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
             <DashboardHeader title={"Auntie's Dashboard"}>
@@ -51,6 +55,8 @@ const OwnerDashboard = () => {
 
             <FetchedError />
 
+            <LowStockAlert products={products} />
+
             <DashboardStats
               stats={stats}
               statsCount={stats.totalDinamic}
@@ -58,14 +64,24 @@ const OwnerDashboard = () => {
               statsCountIcon={<Users />}
             />
 
-            <p className="text-lg font-bold text-[#0f172a]">
+            <p className="text-lg font-bold text-header-color">
               Click on the worker to see worker's analytics.
             </p>
 
             <Workers onlyWorkers={onlyWorkers} />
-            <RecentSales filteredSales={salesData} />
+            <RecentSales
+              filteredSales={salesData}
+              onViewReceipt={setSelectedReceipt}
+            />
           </div>
         </main>
+
+        {selectedReceipt && (
+          <ReceiptPreview
+            sale={selectedReceipt}
+            onClose={() => setSelectedReceipt(null)}
+          />
+        )}
       </div>
     </>
   );

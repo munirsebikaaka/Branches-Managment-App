@@ -5,10 +5,10 @@ const ResponsiveNav = ({ onClick }) => {
     <div className="flex items-center justify-between md:hidden mb-6">
       <button
         onClick={onClick}
-        className="p-2 bg-white border border-[#e2e8f0] rounded-lg text-[#0f172a] shadow-sm">
+        className="p-2 bg-white border border-[#e2e8f0] rounded-lg text-header-color shadow-sm">
         <Menu size={24} />
       </button>
-      <div className="font-bold text-[#0f172a]">Auntie's Shops</div>
+      <div className="font-bold text-header-color">Auntie's Shops</div>
     </div>
   );
 };

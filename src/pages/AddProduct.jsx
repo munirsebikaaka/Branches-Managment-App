@@ -6,22 +6,28 @@ import { postData } from "../utils/api";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { toast } from "react-toastify";
-import { isAddProductsFormValid } from "../services/form/FormValidations";
+import {
+  createHandleBlur,
+  isAddProductsFormValid,
+} from "../services/form/FormValidations";
 import { getFriendlyErrorMessage } from "../utils/errorMessages";
 import ResponsiveNav from "../components/ResponsiveNav";
 import Error from "../components/Error";
 import Blur from "../components/Blur";
+import FormsHeader from "../components/FormsHeader";
+import { getNames } from "../services/pages/PagesFunctionalities";
 
-const CATEGORIES = [
-  { value: "electronics", label: "Electronics" },
-  { value: "phones", label: "Phones" },
-  { value: "accessories", label: "Accessories" },
-  { value: "other", label: "Other" },
-];
-
+const inputNames = {
+  name: "Product name",
+  category: "Product category",
+  buyingPrice: "Buying price",
+  sellingPrice: "Selling price",
+  quantity: "Product quantity",
+};
 const AddProduct = () => {
   const { user } = useAuthContext();
-  const { setProducts } = useProductsContext();
+  const { branches, setProducts } = useProductsContext();
+  const branchNames = getNames(branches);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -29,24 +35,27 @@ const AddProduct = () => {
 
   const [formData, setFormData] = useState({
     name: "",
-    category: "electronics",
+    category: "",
     buyingPrice: "",
     sellingPrice: "",
     quantity: "",
   });
+  const [onBlurErrors, setOnBlurErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: ["quantity", "buyingPrice", "sellingPrice"].includes(name)
-        ? value === ""
-          ? ""
-          : +value
-        : value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const handleBlur = createHandleBlur(inputNames, setOnBlurErrors);
+
+  const isSubmitButtonDissabled =
+    formData.name.length < 1 ||
+    formData.category.length < 1 ||
+    formData.buyingPrice.length < 1 ||
+    formData.sellingPrice.length < 1 ||
+    formData.quantity.length < 1 ||
+    loading;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -59,7 +68,7 @@ const AddProduct = () => {
     try {
       const product = {
         ...formData,
-        branchId: user?.branchId,
+        branchId: user?.role === "owner" ? formData.branchId : user?.branchId,
         createdBy: user?.id,
         createdAt: new Date().toISOString(),
       };
@@ -78,7 +87,7 @@ const AddProduct = () => {
       setFormData((prev) => ({
         ...prev,
         name: "",
-        category: "electronics",
+        category: "",
         buyingPrice: "",
         sellingPrice: "",
         quantity: "",
@@ -93,30 +102,26 @@ const AddProduct = () => {
   const labelClass = "text-sm font-semibold text-[#475569] mb-1.5 block pl-2.5";
 
   const inputClass =
-    "w-full px-4 py-2.5 bg-white border border-[#e2e8f0] rounded-lg text-[#0f172a] text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/20 focus:border-[#4f46e5] placeholder:text-[#94a3b8]";
+    "w-full px-4 py-2.5 bg-white border border-border-color rounded-lg text-header-color text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/20 focus:border-[#4f46e5] placeholder:text-[#94a3b8]";
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc] font-['Outfit',_sans-serif] relative">
+    <div className="flex min-h-screen bg-background font-font-family relative">
       <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      <main className="flex-1 p-6 md:p-12 md:ml-64 transition-all duration-300">
+      <main className="flex-1 p-6 md:p-12 md:ml-64">
         <div className="max-w-2xl mx-auto">
           <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
 
-          <div className="flex flex-col items-center mb-8">
-            <h3 className="text-3xl font-bold text-[#0f172a]">
-              Add New Product
-            </h3>
+          <FormsHeader
+            header={"Add New Product"}
+            description={
+              "Fill in the details below to restock or add a new item to your branch."
+            }
+          />
 
-            <p className="text-[#64748b] mt-1 text-center">
-              Fill in the details below to restock or add a new item to your
-              branch.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
+          <div className="bg-white rounded-2xl border border-border-color p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <Input
                 label="Product Name"
                 inputConfig={{
@@ -124,38 +129,58 @@ const AddProduct = () => {
                   name: "name",
                   value: formData.name,
                   onChange: handleChange,
-                  placeholder: "e.g. iPhone 12 Pro",
+                  placeholder: "e.g. iPhone 14 Pro",
+                  onBlur: handleBlur,
                 }}
+                error={onBlurErrors.name}
               />
 
-              <div className="flex flex-col items-start">
-                <label className={labelClass}>Category</label>
+              <Input
+                label="Category"
+                inputConfig={{
+                  type: "text",
+                  name: "category",
+                  value: formData.category,
+                  onChange: handleChange,
+                  placeholder: "e.g. Electronics, Phones, Accessories",
+                  onBlur: handleBlur,
+                }}
+                error={onBlurErrors.category}
+              />
 
-                <select
-                  name="category"
-                  className={inputClass}
-                  value={formData.category}
-                  onChange={handleChange}>
-                  {CATEGORIES.map((category) => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {user?.role === "owner" && (
+                <div className="flex flex-col items-start">
+                  <label className={labelClass}>Select Branch</label>
+                  <select
+                    name="branchId"
+                    className={inputClass}
+                    value={formData.branchId}
+                    onChange={handleChange}>
+                    <option value="">-- Choose a branch --</option>
+                    {branches.map((branch) => (
+                      <option key={branch.id} value={branch.id}>
+                        {branchNames[branch.id]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Input
-                  label="Buy Price"
-                  inputConfig={{
-                    type: "number",
-                    name: "buyingPrice",
-                    value: formData.buyingPrice,
-                    onChange: handleChange,
-                    placeholder: "0.00",
-                    step: "0.01",
-                  }}
-                />
+                {user?.role === "owner" && (
+                  <Input
+                    label="Buy Price"
+                    inputConfig={{
+                      type: "number",
+                      name: "buyingPrice",
+                      value: formData.buyingPrice,
+                      onChange: handleChange,
+                      placeholder: "0.00",
+                      onBlur: handleBlur,
+                    }}
+                    error={onBlurErrors.buyingPrice}
+                  />
+                )}
 
                 <Input
                   label="Sell Price"
@@ -165,8 +190,9 @@ const AddProduct = () => {
                     value: formData.sellingPrice,
                     onChange: handleChange,
                     placeholder: "0.00",
-                    step: "0.01",
+                    onBlur: handleBlur,
                   }}
+                  error={onBlurErrors.sellingPrice}
                 />
               </div>
 
@@ -178,13 +204,15 @@ const AddProduct = () => {
                   value: formData.quantity,
                   onChange: handleChange,
                   placeholder: "Enter amount",
+                  onBlur: handleBlur,
                 }}
+                error={onBlurErrors.quantity}
               />
 
               <Error message={error}>{error}</Error>
 
-              <Button disabled={loading}>
-                {loading ? "Registering Product..." : "Confirm & Add Product"}
+              <Button disabled={isSubmitButtonDissabled}>
+                {loading ? "Adding Product..." : "Add Product"}
               </Button>
             </form>
           </div>
