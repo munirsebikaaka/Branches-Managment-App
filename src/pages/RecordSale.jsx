@@ -21,6 +21,7 @@ import {
 import FormsHeader from "../components/FormsHeader";
 import { createHandleBlur } from "../services/form/FormValidations";
 import SelectedProductsSales from "../components/products/SelectedProductsSales";
+import ReceiptPreview from "../components/ReceiptPreview";
 const inputNames = {
   productId: "ProductId",
   quantity: "Quantity",
@@ -28,7 +29,6 @@ const inputNames = {
 };
 const RecordSale = () => {
   const { user } = useAuthContext();
-
   const { products, loading, setProducts, setSalesData } = useProductsContext();
 
   const [error, setError] = useState("");
@@ -47,6 +47,7 @@ const RecordSale = () => {
 
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [calculatedQuantity, setCalculatedQuantity] = useState(0);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
 
   const salesProducts = useMemo(() => {
     return products.filter((product) => product.branchId === activeBranchId);
@@ -119,7 +120,7 @@ const RecordSale = () => {
         id: saleResponse?.data?.name || Date.now().toString(),
         ...sale,
       };
-
+      setSelectedReceipt(sale);
       setSalesData((prev) => [createdSale, ...prev]);
       await updateDatabaseAndUi(salesProducts, setProducts, items);
 
@@ -235,6 +236,13 @@ const RecordSale = () => {
           </div>
         </div>
       </main>
+
+      {selectedReceipt && (
+        <ReceiptPreview
+          sale={selectedReceipt}
+          onClose={() => setSelectedReceipt(null)}
+        />
+      )}
     </div>
   );
 };

@@ -7,10 +7,11 @@ import { formatDateTime } from "../../utils/format";
 import { useProductsContext } from "../../utils/context/CreateProductContext";
 import SaleButton from "../../ui/SaleButton";
 import { Trash2 } from "lucide-react";
+import { useAuthContext } from "../../utils/context/CreateAuthContext";
 
 const SalesTable = ({ filteredSales, onViewReceipt }) => {
+  const { user } = useAuthContext();
   const { branches, setSalesData } = useProductsContext();
-
   const getBranchName = useMemo(() => getNames(branches), [branches]);
   const [deletingSaleId, setDeletingSaleId] = useState(null);
 
@@ -67,6 +68,7 @@ const SalesTable = ({ filteredSales, onViewReceipt }) => {
                       setSalesData,
                       "sales",
                       setDeletingSaleId,
+                      user,
                     )
                   }
                   className="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"

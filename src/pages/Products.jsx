@@ -13,7 +13,7 @@ import {
   handleDeleteProduct,
 } from "../services/pages/PagesFunctionalities";
 import Blur from "../components/Blur";
-import {  Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import Search from "../components/Search";
 
 const Products = () => {
@@ -138,6 +138,7 @@ const Products = () => {
                           setProducts,
                           "products",
                           setDeletingProductId,
+                          user,
                         )
                       }
                       className="self-end rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 lg:self-auto">

@@ -135,7 +135,14 @@ export const handleDeleteProduct = async (
   setData,
   endPoint,
   setDeletingId,
+  user,
 ) => {
+  if (user.role !== "owner") {
+    toast.warning(
+      "You can NOT complete the action, please contact your boss for more infor!",
+    );
+    return;
+  }
   setDeletingId(data.id);
   try {
     await deleteData(endPoint, data.id);
