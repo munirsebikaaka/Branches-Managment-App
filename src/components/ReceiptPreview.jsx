@@ -46,7 +46,9 @@ const ReceiptPreview = ({ sale, onClose }) => {
           </p>
           <p>
             Contact:{" "}
-            <span className="font-semibold">{workInSaleCharge.workerId}</span>
+            <span className="font-semibold">
+              {workInSaleCharge.phoneNumber}
+            </span>
           </p>
           <p>
             Served by:{" "}

@@ -71,8 +71,7 @@ const SalesTable = ({ filteredSales, onViewReceipt }) => {
                       user,
                     )
                   }
-                  className="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-                  aria-label="Delete sale">
+                  className="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50">
                   {deletingSaleId === sale.id ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
                   ) : (

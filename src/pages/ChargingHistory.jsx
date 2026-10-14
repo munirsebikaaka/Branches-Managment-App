@@ -64,7 +64,13 @@ const ChargingHistory = () => {
   };
 
   const executeDeleteTakenPhone = (record) => {
-    handleDeleteProduct(record, setChargingData, "charging", setDeletingId);
+    handleDeleteProduct(
+      record,
+      setChargingData,
+      "charging",
+      setDeletingId,
+      user,
+    );
   };
 
   if (loading) {
