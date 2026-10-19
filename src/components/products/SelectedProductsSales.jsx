@@ -1,6 +1,16 @@
-import { removeSelectedProduct } from "../../services/pages/PagesFunctionalities";
+import { Trash2 } from "lucide-react";
+import {
+  removeSelectedProduct,
+  updateSelectedProductForm,
+} from "../../services/pages/PagesFunctionalities";
+import SaleButton from "../../ui/SaleButton";
 
-const SelectedProductsSales = ({ selectedProducts, setSelectedProducts }) => {
+const SelectedProductsSales = ({
+  selectedProducts,
+  setSelectedProducts,
+  setSelectedItem,
+  setShowUpdateButton,
+}) => {
   return (
     <div className="space-y-3">
       <h4 className="text-sm font-semibold text-app-text">
@@ -25,11 +35,25 @@ const SelectedProductsSales = ({ selectedProducts, setSelectedProducts }) => {
               </p>
             </div>
 
-            <button
-              onClick={() => removeSelectedProduct(i, setSelectedProducts)}
-              className="text-xs text-red-500 font-medium hover:text-red-600">
-              Remove
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => removeSelectedProduct(i, setSelectedProducts)}
+                className="text-xs text-red-500 font-medium hover:text-red-600">
+                <Trash2 size={16} />
+              </button>
+
+              <SaleButton
+                text={"Update"}
+                onClick={() =>
+                  updateSelectedProductForm(
+                    item.productId,
+                    selectedProducts,
+                    setSelectedItem,
+                    setShowUpdateButton,
+                  )
+                }
+              />
+            </div>
           </div>
         ))
       )}

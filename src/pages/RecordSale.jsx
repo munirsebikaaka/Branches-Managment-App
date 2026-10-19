@@ -17,6 +17,7 @@ import {
   handleAddProductToSale,
   saleItems,
   updateDatabaseAndUi,
+  updateSelectedProduct,
 } from "../services/pages/PagesFunctionalities";
 import FormsHeader from "../components/FormsHeader";
 import { createHandleBlur } from "../services/form/FormValidations";
@@ -35,6 +36,7 @@ const RecordSale = () => {
   const [onBlurErrors, setOnBlurErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showUpdateButton, setShowUpdateButton] = useState(false);
 
   const activeBranchId = user?.branchId;
 
@@ -142,7 +144,7 @@ const RecordSale = () => {
     );
   }
 
-  const labelClass = "block text-sm font-semibold text-app-text-soft mb-1.5";
+  const labelClass = "text-sm font-semibold text-[#475569] mb-1.5";
   const inputClass =
     "w-full px-4 py-2.5 bg-app-surface border border-border-color rounded-lg text-app-text text-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary";
 
@@ -188,7 +190,6 @@ const RecordSale = () => {
                     })}
                   </select>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input
                     label={"Quantity Sold"}
@@ -216,15 +217,31 @@ const RecordSale = () => {
                   />
                 </div>
 
-                <SaleButton
-                  onClick={handleAddToSale}
-                  text={"+ Add Product to Sale"}
-                />
+                {!showUpdateButton ? (
+                  <SaleButton
+                    onClick={handleAddToSale}
+                    text={"+ Add Product to Sale"}
+                  />
+                ) : (
+                  <SaleButton
+                    onClick={() =>
+                      updateSelectedProduct(
+                        setSelectedProducts,
+                        selectedItem,
+                        setSelectedItem,
+                        setShowUpdateButton,
+                      )
+                    }
+                    text={"Confirm Product Update"}
+                  />
+                )}
               </div>
 
               <SelectedProductsSales
                 selectedProducts={selectedProducts}
                 setSelectedProducts={setSelectedProducts}
+                setSelectedItem={setSelectedItem}
+                setShowUpdateButton={setShowUpdateButton}
               />
 
               <Error message={error}>{error}</Error>

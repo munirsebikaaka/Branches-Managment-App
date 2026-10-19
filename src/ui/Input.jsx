@@ -1,9 +1,4 @@
-import {
-  CircleAlert,
-  Eye,
-  EyeOff,
-  MessageCircleWarningIcon,
-} from "lucide-react";
+import { CircleAlert, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
 const Input = ({ label, inputConfig, error }) => {

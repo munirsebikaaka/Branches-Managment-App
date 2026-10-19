@@ -82,6 +82,29 @@ export const handleAddProductToSale = (
   setError("");
 };
 
+export const updateSelectedProduct = (
+  setSelectedProducts,
+  selectedItem,
+  setSelectedItem,
+  setShowUpdateButton,
+) => {
+  setSelectedProducts((prev) =>
+    prev.map((product) =>
+      product.productId === selectedItem.productId
+        ? {
+            ...product,
+            quantity: selectedItem.quantity,
+            price: selectedItem.price,
+          }
+        : product,
+    ),
+  );
+
+  setSelectedItem({ productId: "", quantity: "", price: "" });
+  toast.success("Product updated succesfully!");
+  setShowUpdateButton((prev) => !prev);
+};
+
 export const removeSelectedProduct = (i, setSelectedProducts) => {
   setSelectedProducts((prev) => prev.filter((_, index) => index !== i));
 };
@@ -101,6 +124,23 @@ export const saleItems = (selectedProducts, salesProducts) => {
       total,
     };
   });
+};
+
+export const updateSelectedProductForm = (
+  productId,
+  selectedProducts,
+  setSelectedItem,
+  setShowUpdateButton,
+) => {
+  const product = selectedProducts.find((p) => p.productId === productId);
+  setSelectedItem((prev) => ({
+    ...prev,
+    productId: product.productId,
+    quantity: product.quantity,
+    price: product.price,
+  }));
+  toast.info("Make your updates.");
+  setShowUpdateButton((prev) => !prev);
 };
 
 export const updateDatabaseAndUi = async (
