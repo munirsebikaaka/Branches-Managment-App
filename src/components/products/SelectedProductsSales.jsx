@@ -4,6 +4,8 @@ import {
   updateSelectedProductForm,
 } from "../../services/pages/PagesFunctionalities";
 import SaleButton from "../../ui/SaleButton";
+import { formatMoney } from "../../utils/format";
+import { useMemo } from "react";
 
 const SelectedProductsSales = ({
   selectedProducts,
@@ -11,6 +13,17 @@ const SelectedProductsSales = ({
   setSelectedItem,
   setShowUpdateButton,
 }) => {
+  const recieptTotal = useMemo(
+    () =>
+      selectedProducts
+        .map((sale) => sale.quantity * sale.price)
+        .reduce((sum, item) => sum + item, 0),
+
+    [selectedProducts],
+  );
+
+  console.log(recieptTotal);
+
   return (
     <div className="space-y-3">
       <h4 className="text-sm font-semibold text-app-text">
@@ -31,9 +44,12 @@ const SelectedProductsSales = ({
                 {item.productName}
               </p>
               <p className="text-header-description">
-                Quantity: {item.quantity}; Selling Price: UGX {+item.price}
+                Quantity: {item.quantity}; Each at:
+                {formatMoney(+item.price)}
               </p>
             </div>
+
+            <p>Total:{formatMoney(item.quantity * item.price)}</p>
 
             <div className="flex items-center gap-2">
               <button
@@ -57,6 +73,8 @@ const SelectedProductsSales = ({
           </div>
         ))
       )}
+
+      <h2>Reciept total amount{formatMoney(recieptTotal)}</h2>
     </div>
   );
 };

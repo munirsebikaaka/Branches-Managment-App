@@ -23,6 +23,7 @@ import FormsHeader from "../components/FormsHeader";
 import { createHandleBlur } from "../services/form/FormValidations";
 import SelectedProductsSales from "../components/products/SelectedProductsSales";
 import ReceiptPreview from "../components/ReceiptPreview";
+import { formatMoney } from "../utils/format";
 const inputNames = {
   productId: "ProductId",
   quantity: "Quantity",
@@ -91,6 +92,10 @@ const RecordSale = () => {
     );
   };
 
+  const totalPricePerSelectedItem = formatMoney(
+    selectedItem?.quantity * selectedItem?.price,
+  );
+
   const isSubmitButtonDissabled =
     selectedProducts.length === 0 || loading || submitting;
 
@@ -154,7 +159,7 @@ const RecordSale = () => {
 
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       <main className="flex-1 p-6 md:p-12 md:ml-64">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-full mx-auto">
           <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
           <FetchedError />
 
@@ -162,94 +167,99 @@ const RecordSale = () => {
             header={" Record New Sale"}
             description={"Select a product and enter the transaction details."}
           />
-          <div className="bg-app-surface rounded-2xl border border-border-color">
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <label className={labelClass}>Select Product</label>
-                  <select
-                    name="productId"
-                    className={inputClass}
-                    value={selectedItem.productId}
-                    onChange={handleChange}>
-                    <option value="">-- Choose from inventory --</option>
-                    {salesProducts.map((product) => {
-                      const selectedQuantity = selectedProducts
-                        .filter((item) => item.productId === product.id)
-                        .reduce((sum, item) => sum + item.quantity, 0);
-                      const availableQuantity =
-                        product.id === selectedItem.productId
-                          ? calculatedQuantity
-                          : product.quantity - selectedQuantity;
 
-                      return (
-                        <option key={product.id} value={product.id}>
-                          {product.name} (Available: {availableQuantity})
-                        </option>
-                      );
-                    })}
-                  </select>
+          <div className="flex gap-3">
+            <div className="bg-app-surface rounded-2xl border border-border-color">
+              <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className={labelClass}>Select Product</label>
+                    <select
+                      name="productId"
+                      className={inputClass}
+                      value={selectedItem.productId}
+                      onChange={handleChange}>
+                      <option value="">-- Choose from inventory --</option>
+                      {salesProducts.map((product) => {
+                        const selectedQuantity = selectedProducts
+                          .filter((item) => item.productId === product.id)
+                          .reduce((sum, item) => sum + item.quantity, 0);
+                        const availableQuantity =
+                          product.id === selectedItem.productId
+                            ? calculatedQuantity
+                            : product.quantity - selectedQuantity;
+
+                        return (
+                          <option key={product.id} value={product.id}>
+                            {product.name} (Available: {availableQuantity})
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Input
+                      label={"Quantity Sold"}
+                      inputConfig={{
+                        type: "number",
+                        name: "quantity",
+                        value: selectedItem.quantity,
+                        onChange: handleChange,
+                        placeholder: "0",
+                        onBlur: handleBlur,
+                      }}
+                      error={onBlurErrors.quantity}
+                    />
+                    <Input
+                      label={"Selling Price"}
+                      inputConfig={{
+                        type: "number",
+                        name: "price",
+                        value: selectedItem.price,
+                        onChange: handleChange,
+                        placeholder: "0.00",
+                        onBlur: handleBlur,
+                      }}
+                      error={onBlurErrors.price}
+                    />
+                  </div>
+
+                  <h2>Total amount: {totalPricePerSelectedItem}</h2>
+
+                  {!showUpdateButton ? (
+                    <SaleButton
+                      onClick={handleAddToSale}
+                      text={"+ Add Product to Sale"}
+                    />
+                  ) : (
+                    <SaleButton
+                      onClick={() =>
+                        updateSelectedProduct(
+                          setSelectedProducts,
+                          selectedItem,
+                          setSelectedItem,
+                          setShowUpdateButton,
+                        )
+                      }
+                      text={"Confirm Product Update"}
+                    />
+                  )}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Input
-                    label={"Quantity Sold"}
-                    inputConfig={{
-                      type: "number",
-                      name: "quantity",
-                      value: selectedItem.quantity,
-                      onChange: handleChange,
-                      placeholder: "0",
-                      onBlur: handleBlur,
-                    }}
-                    error={onBlurErrors.quantity}
-                  />
-                  <Input
-                    label={"Selling Price"}
-                    inputConfig={{
-                      type: "number",
-                      name: "price",
-                      value: selectedItem.price,
-                      onChange: handleChange,
-                      placeholder: "0.00",
-                      onBlur: handleBlur,
-                    }}
-                    error={onBlurErrors.price}
-                  />
-                </div>
 
-                {!showUpdateButton ? (
-                  <SaleButton
-                    onClick={handleAddToSale}
-                    text={"+ Add Product to Sale"}
-                  />
-                ) : (
-                  <SaleButton
-                    onClick={() =>
-                      updateSelectedProduct(
-                        setSelectedProducts,
-                        selectedItem,
-                        setSelectedItem,
-                        setShowUpdateButton,
-                      )
-                    }
-                    text={"Confirm Product Update"}
-                  />
-                )}
-              </div>
+                <Error message={error}>{error}</Error>
 
-              <SelectedProductsSales
-                selectedProducts={selectedProducts}
-                setSelectedProducts={setSelectedProducts}
-                setSelectedItem={setSelectedItem}
-                setShowUpdateButton={setShowUpdateButton}
-              />
+                <Button disabled={isSubmitButtonDissabled}>
+                  {submitting ? "Processing..." : "Complete Sale"}
+                </Button>
+              </form>
+            </div>
 
-              <Error message={error}>{error}</Error>
-
-              <Button disabled={isSubmitButtonDissabled}>
-                {submitting ? "Processing..." : "Complete Sale"}
-              </Button>
-            </form>
+            <SelectedProductsSales
+              selectedProducts={selectedProducts}
+              setSelectedProducts={setSelectedProducts}
+              setSelectedItem={setSelectedItem}
+              setShowUpdateButton={setShowUpdateButton}
+            />
           </div>
         </div>
       </main>
