@@ -56,6 +56,21 @@ const ReceiptPreview = ({ sale, onClose }) => {
               {workInSaleCharge.name}
             </span>
           </p>
+          {sale.paymentMethod && (
+            <p>
+              Payment method:{" "}
+              <span className="font-semibold">
+                {sale.paymentMethod
+                  .split("_")
+                  .map((word) =>
+                    word === "mtn"
+                      ? "MTN"
+                      : word.charAt(0).toUpperCase() + word.slice(1),
+                  )
+                  .join(" ")}
+              </span>
+            </p>
+          )}
         </div>
 
         <div className="space-y-2 text-xs text-[#334155]">

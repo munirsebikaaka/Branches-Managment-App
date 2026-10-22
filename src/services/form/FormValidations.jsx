@@ -128,15 +128,19 @@ export const isManageWorkersFormValid = (formData, setErrorMessage) => {
 export const isPhoneChargingFormValid = (formData, setError) => {
   if (!formData.customerName.trim()) {
     setError("Customer name is required.");
-    return;
+    return false;
+  }
+  if (!/^\d{4,10}$/.test(formData.contact)) {
+    setError("Phone number must contain between 4 and 10 digits.");
+    return false;
   }
   if (!formData.deviceModel.trim()) {
     setError("Phone model is required.");
-    return;
+    return false;
   }
   if (+formData.price <= 0) {
     setError("Enter a valid charging price.");
-    return;
+    return false;
   }
   return true;
 };

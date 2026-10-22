@@ -13,6 +13,7 @@ import AddBranch from "./pages/AddBranch";
 import OwnerDashboard from "./pages/OwnerDashboard";
 import Products from "./pages/Products";
 import Sales from "./pages/Sales";
+import ChoosePaymentMethod from "./pages/ChoosePaymentMethod";
 
 function App() {
   return (
@@ -37,6 +38,14 @@ function App() {
           element={
             <ProtectedRoute>
               <RecordSale />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/choose-payment-method"
+          element={
+            <ProtectedRoute>
+              <ChoosePaymentMethod />
             </ProtectedRoute>
           }
         />

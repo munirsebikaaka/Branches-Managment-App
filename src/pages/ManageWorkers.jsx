@@ -168,6 +168,8 @@ export const ManageWorkers = () => {
                     value: formData.phoneNumber,
                     onChange: handleChange,
                     placeholder: "07 XXXX XXXX",
+                    min: "4",
+                    max: "10",
                     onBlur: handleBlur,
                   }}
                   error={onBlurErrors.phoneNumber}

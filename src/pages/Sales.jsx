@@ -43,13 +43,13 @@ const Sales = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-background font-font-family relative">
+    <div className="relative flex min-h-screen bg-background font-font-family">
       <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
 
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      <main className="flex-1 p-4 md:p-12 md:ml-64 transition-all duration-300">
-        <div className="max-w-6xl mx-auto">
+      <main className="min-w-0 flex-1 p-4 transition-all duration-300 sm:p-6 lg:ml-64 lg:p-10">
+        <div className="mx-auto max-w-6xl">
           <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
 
           <Search

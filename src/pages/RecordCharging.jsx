@@ -41,13 +41,15 @@ const RecordCharging = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const updatedValue =
+      name === "contact" ? value.replace(/\D/g, "").slice(0, 10) : value;
+    setFormData((prev) => ({ ...prev, [name]: updatedValue }));
   };
   const handleBlur = createHandleBlur(inputNames, setOnBlurErrors);
 
   const isSubmitButtonDissabled =
     formData.customerName.length < 1 ||
-    formData.contact.length < 1 ||
+    !/^\d{4,10}$/.test(formData.contact) ||
     formData.deviceModel.length < 1 ||
     formData.price.length < 1 ||
     submitting ||
@@ -67,6 +69,7 @@ const RecordCharging = () => {
         branchId: user?.branchId,
         receivedAt: new Date().toISOString(),
         createdBy: user?.id,
+        phoneOwnerCode: Math.floor(Math.random() * 100000),
         status: "at_shop",
       };
       const response = await postData(record, "charging");
@@ -102,8 +105,8 @@ const RecordCharging = () => {
     <div className="flex min-h-screen bg-[#f8fafc] font-font-family relative">
       <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-      <main className="flex-1 p-4 md:p-12 md:ml-64">
-        <div className="max-w-2xl mx-auto space-y-6">
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:ml-64 lg:p-10">
+        <div className="mx-auto max-w-2xl space-y-6">
           <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
           <FetchedError />
 
@@ -114,8 +117,8 @@ const RecordCharging = () => {
             }
           />
 
-          <div className="bg-white rounded-2xl border border-border-color shadow-sm overflow-hidden">
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
+          <div className="overflow-hidden rounded-2xl border border-border-color bg-white shadow-sm">
+            <form onSubmit={handleSubmit} className="space-y-6 p-4 sm:p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <Input
                   label="Customer name"
@@ -132,13 +135,22 @@ const RecordCharging = () => {
                   label="Phone number"
                   inputConfig={{
                     name: "contact",
+                    type: "tel",
+                    inputMode: "numeric",
                     value: formData.contact,
                     onChange: handleChange,
-                    placeholder: "e.g. 070XXXXXXX",
+                    placeholder: "e.g. 0701234567",
+                    minLength: 4,
+                    maxLength: 10,
+                    pattern: "[0-9]{4,10}",
+                    required: true,
                     onBlur: handleBlur,
                   }}
                   error={onBlurErrors.contact}
                 />
+                <p className="-mt-4 text-xs text-header-description md:col-span-2">
+                  Enter 4 to 10 digits.
+                </p>
                 <Input
                   label="Device model"
                   inputConfig={{

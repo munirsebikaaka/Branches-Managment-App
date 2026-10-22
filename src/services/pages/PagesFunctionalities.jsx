@@ -43,6 +43,15 @@ export const handleAddProductToSale = (
     return;
   }
 
+  for (const selectedProduct of selectedProducts) {
+    if (selectedProduct.productId === product.id) {
+      setError(
+        "Product is already added to the reciept, please update it if necessary!",
+      );
+      return;
+    }
+  }
+
   const selectedQuantity = selectedProducts
     .filter((item) => item.productId === product.id)
     .reduce((sum, item) => sum + item.quantity, 0);
@@ -69,13 +78,13 @@ export const handleAddProductToSale = (
   }
 
   setSelectedProducts((prev) => [
-    ...prev,
     {
       productId: product.id,
       productName: product.name,
       quantity: +selectedItem.quantity,
       price: +selectedItem.price,
     },
+    ...prev,
   ]);
 
   setSelectedItem({ productId: "", quantity: "", price: "" });
@@ -131,7 +140,9 @@ export const updateSelectedProductForm = (
   selectedProducts,
   setSelectedItem,
   setShowUpdateButton,
+  setError,
 ) => {
+  setError("");
   const product = selectedProducts.find((p) => p.productId === productId);
   setSelectedItem((prev) => ({
     ...prev,
@@ -249,6 +260,8 @@ export const filterAppData = (
         data?.name,
         data?.customerName,
         data?.deviceModel,
+        data?.saleRecieptNumber,
+        data?.phoneOwnerCode,
       ].some((value) => value?.toLowerCase().includes(searchValue));
     });
   }
