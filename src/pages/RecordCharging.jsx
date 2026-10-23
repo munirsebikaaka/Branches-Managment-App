@@ -17,6 +17,7 @@ import {
   isPhoneChargingFormValid,
 } from "../services/form/FormValidations";
 import FormsHeader from "../components/FormsHeader";
+import ChargingReceipt from "../assets/ChargingReceipt";
 
 const inputNames = {
   customerName: "Name",
@@ -26,18 +27,20 @@ const inputNames = {
 };
 const RecordCharging = () => {
   const { user } = useAuthContext();
-  const { setChargingData, loading } = useProductsContext();
+  const { chargingData, setChargingData, loading } = useProductsContext();
   const [formData, setFormData] = useState({
     customerName: "",
     contact: "",
     deviceModel: "",
     price: "",
+    paidOnArrival: false,
   });
 
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [onBlurErrors, setOnBlurErrors] = useState({});
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [receipt, setReceipt] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,15 +64,24 @@ const RecordCharging = () => {
     if (!isPhoneChargingFormValid(formData, setError)) return;
     setSubmitting(true);
     try {
+      const usedOwnerCodes = new Set(
+        chargingData.map((phone) => String(phone.phoneOwnerCode)),
+      );
+      let phoneOwnerCode;
+      do {
+        phoneOwnerCode = Math.floor(100000 + Math.random() * 900000);
+      } while (usedOwnerCodes.has(String(phoneOwnerCode)));
+
       const record = {
         customerName: formData.customerName.trim(),
         contact: formData.contact.trim(),
         deviceModel: formData.deviceModel.trim(),
         price: +formData.price,
+        paidOnArrival: formData.paidOnArrival,
         branchId: user?.branchId,
         receivedAt: new Date().toISOString(),
         createdBy: user?.id,
-        phoneOwnerCode: Math.floor(Math.random() * 100000),
+        phoneOwnerCode,
         status: "at_shop",
       };
       const response = await postData(record, "charging");
@@ -78,12 +90,14 @@ const RecordCharging = () => {
         ...record,
       };
       setChargingData((prev) => [createdRecord, ...prev]);
+      setReceipt(createdRecord);
       setFormData((prev) => ({
         ...prev,
         customerName: "",
         contact: "",
         deviceModel: "",
         price: "",
+        paidOnArrival: false,
       }));
       toast.success(`Phone recorded successfully.`);
     } catch (err) {
@@ -176,6 +190,21 @@ const RecordCharging = () => {
                   error={onBlurErrors.price}
                 />
               </div>
+              <label className="flex items-center gap-3 rounded-xl border border-border-color p-4 text-sm text-header-color">
+                <input
+                  type="checkbox"
+                  name="paidOnArrival"
+                  checked={formData.paidOnArrival}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      paidOnArrival: e.target.checked,
+                    }))
+                  }
+                  className="h-4 w-4 accent-action-color"
+                />
+                Customer paid the charging fee when dropping off the phone
+              </label>
               <Error message={error}>{error}</Error>
               <Button disabled={isSubmitButtonDissabled}>
                 {submitting ? "Submitting..." : "Submit phone details"}
@@ -184,6 +213,9 @@ const RecordCharging = () => {
           </div>
         </div>
       </main>
+      {receipt && (
+        <ChargingReceipt receipt={receipt} onClose={() => setReceipt(null)} />
+      )}
     </div>
   );
 };

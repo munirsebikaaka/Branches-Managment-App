@@ -17,3 +17,34 @@ button {
 button:disabled {
   cursor: not-allowed;
 }
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  .printable-receipt,
+  .printable-receipt * {
+    visibility: visible !important;
+  }
+
+  .printable-receipt {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  .printable-receipt-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .print-hidden {
+    display: none !important;
+  }
+}

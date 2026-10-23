@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
 import { postData } from "../utils/api";
 import { useAuthContext } from "../utils/context/CreateAuthContext";
@@ -14,94 +13,96 @@ import Error from "../components/Error";
 import Blur from "../components/Blur";
 import SaleButton from "../ui/SaleButton";
 import {
+  filterAppData,
+  getNames,
   handleAddProductToSale,
   saleItems,
   updateDatabaseAndUi,
   updateSelectedProduct,
 } from "../services/pages/PagesFunctionalities";
-import FormsHeader from "../components/FormsHeader";
 import { createHandleBlur } from "../services/form/FormValidations";
-import SelectedProductsSales from "../components/products/SelectedProductsSales";
 import ReceiptPreview from "../components/ReceiptPreview";
 import { formatMoney } from "../utils/format";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useSaleContext } from "../utils/context/CreateSaleContext";
+import Search from "../components/Search";
 const inputNames = {
   productId: "ProductId",
   quantity: "Quantity",
   price: "Price",
 };
 const RecordSale = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
   const { user } = useAuthContext();
-  const { products, loading, setProducts, setSalesData } = useProductsContext();
+  const { products, loading, setProducts, setSalesData, branches } =
+    useProductsContext();
+  const {
+    selectedProducts,
+    setSelectedProducts,
+    selectedItem,
+    setSelectedItem,
+    calculatedQuantity,
+    setCalculatedQuantity,
+    showUpdateButton,
+    setShowUpdateButton,
+    error,
+    setError,
+  } = useSaleContext();
 
-  const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const location = useLocation();
   const [onBlurErrors, setOnBlurErrors] = useState({});
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [showUpdateButton, setShowUpdateButton] = useState(false);
+  const [search, setSearch] = useState("");
 
   const activeBranchId = user?.branchId;
 
-  const [selectedItem, setSelectedItem] = useState({
-    productId: "",
-    quantity: "",
-    price: "",
-  });
-  const handleBlur = createHandleBlur(inputNames, setOnBlurErrors);
+  const getBranchName = useMemo(() => getNames(branches), [branches]);
 
-  const [selectedProducts, setSelectedProducts] = useState(
-    () => location.state?.selectedProducts || [],
-  );
-  const [paymentMethod, setPaymentMethod] = useState(
-    () => location.state?.paymentMethod || "",
-  );
-  const [calculatedQuantity, setCalculatedQuantity] = useState(0);
+  const handleBlur = createHandleBlur(inputNames, setOnBlurErrors);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
 
   const salesProducts = useMemo(() => {
     return products.filter((product) => product.branchId === activeBranchId);
   }, [products, activeBranchId]);
 
+  const filteredProducts = useMemo(() => {
+    return filterAppData(salesProducts, user, null, getBranchName, search);
+  }, [salesProducts, user, search, getBranchName]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     setSelectedItem((prev) => {
-      if (name === "productId") {
-        const product = salesProducts.find((p) => p.id === value);
-        const selectedQuantity = selectedProducts
-          .filter((item) => item.productId === value)
-          .reduce((sum, item) => sum + item.quantity, 0);
-
-        setCalculatedQuantity(product?.quantity - selectedQuantity);
-
-        return {
-          ...prev,
-          productId: value,
-          price: product?.sellingPrice,
-          quantity: "",
-        };
-      }
-
       return { ...prev, [name]: value };
     });
   };
 
-  const isProvidedQuantitySuported = useMemo(() => {
-    const selectedProduct = salesProducts.find(
-      (p) => p.id === selectedItem.productId,
+  const handleSelectProduct = (product) => {
+    const alreadyInCart = selectedProducts.some(
+      (item) => item.productId === product.id,
     );
+    if (alreadyInCart) return;
 
-    if (selectedItem.quantity <= selectedProduct?.quantity) {
-      return true;
-    } else {
-      return false;
-    }
-  }, [salesProducts, selectedItem]);
+    setSelectedItem({
+      productId: product.id,
+      quantity: "1",
+      price: product.sellingPrice,
+    });
+    setCalculatedQuantity(+product.quantity);
+    setShowUpdateButton(false);
+    setError("");
+  };
+
+  const isProvidedQuantitySuported = useMemo(() => {
+    return (
+      +selectedItem.quantity > 0 && +selectedItem.quantity <= calculatedQuantity
+    );
+  }, [selectedItem.quantity, calculatedQuantity]);
 
   const handleAddToSale = () => {
     handleAddProductToSale(
       selectedItem,
-      salesProducts,
+      filteredProducts,
       setSelectedProducts,
       setSelectedItem,
       setError,
@@ -111,17 +112,47 @@ const RecordSale = () => {
   };
 
   const handleUpdateSelectedProduct = () => {
+    const product = filteredProducts.find(
+      (item) => item.id === selectedItem.productId,
+    );
+    const otherSelectedQuantity = selectedProducts
+      .filter((item) => item.productId !== selectedItem.productId)
+      .reduce((sum, item) => sum + +item.quantity, 0);
+    const availableQuantity = +product?.quantity - otherSelectedQuantity;
+
+    if (
+      !product ||
+      +selectedItem.quantity < 1 ||
+      +selectedItem.quantity > availableQuantity ||
+      +selectedItem.price <= 0
+    ) {
+      setError(
+        "Enter a valid price and choose a quantity within the available stock.",
+      );
+      return;
+    }
+
     updateSelectedProduct(
       setSelectedProducts,
-      selectedItem,
+      {
+        ...selectedItem,
+        quantity: +selectedItem.quantity,
+        price: +selectedItem.price,
+      },
       setSelectedItem,
       setShowUpdateButton,
     );
+    setError("");
+    if (location.state?.returnToCartAfterUpdate) {
+      navigate("/selected-products-cart");
+    }
   };
 
   const totalPricePerSelectedItem = formatMoney(
     selectedItem?.quantity * selectedItem?.price,
   );
+
+  const isGoToSelectedItemsButtonDissabled = selectedProducts.length < 1;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -132,25 +163,18 @@ const RecordSale = () => {
       return;
     }
 
-    if (!paymentMethod) {
-      navigate("/choose-payment-method", {
-        state: { selectedProducts },
-      });
-      return;
-    }
-
     try {
-      const items = saleItems(selectedProducts, salesProducts);
+      const items = saleItems(selectedProducts, filteredProducts);
       const saleTotal = items.reduce((sum, item) => sum + item.total, 0);
 
       const sale = {
         items,
         total: saleTotal,
-        paymentMethod,
+
         branchId: activeBranchId,
         createdBy: user?.id,
         createdAt: new Date().toISOString(),
-        saleRecieptNumber: Math.floor(Math.random() * 100000),
+        saleRecieptNumber: Math.floor(100000 + Math.random() * 900000),
       };
 
       const saleResponse = await postData(sale, "sales");
@@ -160,14 +184,17 @@ const RecordSale = () => {
       };
       setSelectedReceipt(createdSale);
       setSalesData((prev) => [createdSale, ...prev]);
-      await updateDatabaseAndUi(salesProducts, setProducts, items);
+      await updateDatabaseAndUi(filteredProducts, setProducts, items);
 
       toast.success("Sale recorded successfully!");
       setSelectedProducts([]);
-      setPaymentMethod("");
     } catch (err) {
       setError(getFriendlyErrorMessage(err, "general"));
     }
+  };
+
+  const goToSelectedItems = () => {
+    navigate("/selected-products-cart");
   };
 
   if (loading) {
@@ -179,68 +206,111 @@ const RecordSale = () => {
     );
   }
 
-  const labelClass = "mb-1.5 block text-sm font-semibold text-[#475569]";
-  const inputClass =
-    "w-full rounded-xl border border-border-color bg-white px-4 py-3 text-sm text-header-color transition-all focus:border-action-color focus:outline-none focus:ring-2 focus:ring-action-color/20";
-
   return (
     <div className="relative flex min-h-screen bg-background font-font-family">
       <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
 
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       <main className="min-w-0 flex-1 p-4 sm:p-6 lg:ml-64 lg:p-10">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto">
           <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
-          <FetchedError />
-
-          <FormsHeader
-            header={" Record New Sale"}
-            description={"Select a product and enter the transaction details."}
+          <Search
+            title={"Select a product to add it to the sale."}
+            urlBranchId={null}
+            getBranchName={getBranchName}
+            search={search}
+            setSearch={setSearch}
+            placeholder={"Search by product name..."}
           />
 
-          <form
-            onSubmit={handleSubmit}
-            className="grid min-w-0 grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)]">
-            <div className="min-w-0 rounded-2xl border border-border-color bg-white p-4 shadow-sm sm:p-6">
-              <div className="space-y-5">
-                <div>
-                  <label className={labelClass}>Select Product</label>
-                  <select
-                    name="productId"
-                    className={inputClass}
-                    value={selectedItem.productId}
-                    onChange={handleChange}>
-                    <option value="">-- Choose from inventory --</option>
-                    {salesProducts.map((product) => {
-                      const selectedQuantity = selectedProducts
-                        .filter((item) => item.productId === product.id)
-                        .reduce((sum, item) => sum + item.quantity, 0);
-                      const availableQuantity =
-                        product.id === selectedItem.productId
-                          ? calculatedQuantity
-                          : product.quantity - selectedQuantity;
+          <FetchedError />
+
+          <form onSubmit={handleSubmit}>
+            <div className="flex gap-4 justify-between">
+              <section className="rounded-2xl w-[60%] border border-border-color bg-white p-4 shadow-sm sm:p-6">
+                <div className="mb-4">
+                  <h2 className="text-lg font-bold text-header-color">
+                    Available products
+                  </h2>
+                  <p className="mt-1 text-sm text-header-description">
+                    Select a product to add it to the sale.
+                  </p>
+                </div>
+                {filteredProducts.length === 0 ? (
+                  <p className=" p-5 text-center text-sm text-header-description">
+                    No products are available at this branch.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    {filteredProducts.map((product) => {
+                      const selected = selectedProducts.some(
+                        (item) => item.productId === product.id,
+                      );
+                      const isSelected = selectedItem.productId === product.id;
 
                       return (
-                        <option key={product.id} value={product.id}>
-                          {product.name} (Available: {availableQuantity})
-                        </option>
+                        <button
+                          key={product.id}
+                          type="button"
+                          disabled={
+                            selected ||
+                            +product.quantity < 1 ||
+                            showUpdateButton
+                          }
+                          onClick={() => handleSelectProduct(product)}
+                          className={`min-w-0 rounded-xl border p-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                            isSelected
+                              ? "border-action-color bg-indigo-50/60"
+                              : "border-border-color hover:border-action-color/50"
+                          }`}>
+                          <span className="block truncate font-semibold text-header-color">
+                            {product.name}
+                          </span>
+                          <span className="mt-1 block text-sm text-header-description">
+                            {formatMoney(+product.sellingPrice)}
+                          </span>
+                          <span className="mt-2 block text-xs font-medium text-header-description">
+                            {selected
+                              ? "Already in cart"
+                              : `${product.quantity} in stock`}
+                          </span>
+                        </button>
                       );
                     })}
-                  </select>
-                </div>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Input
-                    label={"Quantity Sold"}
-                    inputConfig={{
-                      type: "number",
-                      name: "quantity",
-                      value: selectedItem.quantity,
-                      onChange: handleChange,
-                      placeholder: "0",
-                      onBlur: handleBlur,
-                    }}
-                    error={onBlurErrors.quantity}
+                  </div>
+                )}
+              </section>
+
+              <section className="relative w-100 rounded-2xl border border-border-color bg-white p-4 shadow-sm sm:p-6 self-start">
+                <h3 className="font-semibold text-header-color">
+                  {showUpdateButton
+                    ? "Update cart item"
+                    : "Add selected product"}
+                </h3>
+
+                <div className="absolute px-3 top-0 right-0">
+                  <SaleButton
+                    disabled={isGoToSelectedItemsButtonDissabled}
+                    onClick={goToSelectedItems}
+                    text={`${selectedProducts.length} View Items`}
                   />
+                </div>
+
+                {!selectedItem.productId && (
+                  <p className="text-sm text-header-description">
+                    Choose a product to set its quantity and price.
+                  </p>
+                )}
+
+                <p className="text-sm capitalize mb-3 font-semibold text-header-color">
+                  {
+                    filteredProducts.find(
+                      (product) => product.id === selectedItem.productId,
+                    )?.name
+                  }
+                </p>
+
+                <div className="space-y-3 mb-3">
                   <Input
                     label={"Selling Price"}
                     inputConfig={{
@@ -249,11 +319,29 @@ const RecordSale = () => {
                       value: selectedItem.price,
                       onChange: handleChange,
                       placeholder: "0.00",
+                      min: 0.01,
+                      step: "any",
                       onBlur: handleBlur,
                     }}
                     error={onBlurErrors.price}
                   />
+                  <Input
+                    label={"Quantity Sold"}
+                    inputConfig={{
+                      type: "number",
+                      name: "quantity",
+                      value: selectedItem.quantity,
+                      onChange: handleChange,
+                      placeholder: "0",
+                      min: 1,
+                      max: calculatedQuantity,
+                      step: 1,
+                      onBlur: handleBlur,
+                    }}
+                    error={onBlurErrors.quantity}
+                  />
                 </div>
+
                 {selectedItem.price > 0 && (
                   <p
                     className={`text-sm font-medium text-${isProvidedQuantitySuported ? "header-description" : "error-color"}`}>
@@ -265,34 +353,21 @@ const RecordSale = () => {
 
                 <Error message={error}>{error}</Error>
 
-                {!showUpdateButton ? (
-                  <SaleButton
-                    onClick={handleAddToSale}
-                    text={"+ Add Product to Sale"}
-                  />
-                ) : (
-                  <SaleButton
-                    onClick={handleUpdateSelectedProduct}
-                    text={"Confirm Product Update"}
-                  />
-                )}
-              </div>
+                <div className="mt-2 flex justify-center">
+                  {!showUpdateButton ? (
+                    <SaleButton
+                      onClick={handleAddToSale}
+                      text={"+ Add Product to Sale"}
+                    />
+                  ) : (
+                    <SaleButton
+                      onClick={handleUpdateSelectedProduct}
+                      text={"Confirm Product Update"}
+                    />
+                  )}
+                </div>
+              </section>
             </div>
-
-            <SelectedProductsSales
-              selectedProducts={selectedProducts}
-              setSelectedProducts={setSelectedProducts}
-              setSelectedItem={setSelectedItem}
-              setShowUpdateButton={setShowUpdateButton}
-              setError={setError}
-              paymentMethod={paymentMethod}
-              onChoosePaymentMethod={() => {
-                setError("");
-                navigate("/choose-payment-method", {
-                  state: { selectedProducts, paymentMethod },
-                });
-              }}
-            />
           </form>
         </div>
       </main>

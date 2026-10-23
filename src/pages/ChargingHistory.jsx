@@ -91,11 +91,12 @@ const ChargingHistory = () => {
           <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
 
           <Search
-            title={"Sales history"}
+            title={"Phone history"}
             urlBranchId={urlBranchId}
             getBranchName={getBranchName}
             search={search}
             setSearch={setSearch}
+            placeholder={"Search phone by Owner code..."}
           />
 
           <FetchedError />
@@ -140,6 +141,14 @@ const ChargingHistory = () => {
                   </div>
                   <div>
                     <p className="text-[10px] uppercase font-bold text-[#94a3b8]">
+                      Owner code
+                    </p>
+                    <p className="text-[#475569] text-sm font-semibold">
+                      {record.phoneOwnerCode || "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-[#94a3b8]">
                       Owner contact
                     </p>
                     <p className="text-[#475569] text-sm">{record.contact}</p>
@@ -150,6 +159,15 @@ const ChargingHistory = () => {
                     </p>
                     <p className="text-[#475569] text-sm">
                       {formatDateTime(record.receivedAt)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-[#94a3b8]">
+                      Payment
+                    </p>
+                    <p
+                      className={`text-sm font-medium ${record.paidOnArrival ? "text-emerald-700" : "text-amber-700"}`}>
+                      {record.paidOnArrival ? "Paid" : "Unpaid"}
                     </p>
                   </div>
 

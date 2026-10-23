@@ -14,13 +14,16 @@ import OwnerDashboard from "./pages/OwnerDashboard";
 import Products from "./pages/Products";
 import Sales from "./pages/Sales";
 import ChoosePaymentMethod from "./pages/ChoosePaymentMethod";
+import SelectedProductsSales from "./components/products/SelectedProductsSales";
+import { SaleProvider } from "./context/SaleContext";
 
 function App() {
   return (
     <>
       <ToastContainer />
 
-      <Routes>
+      <SaleProvider>
+        <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
@@ -117,7 +120,17 @@ function App() {
             </ProtectedRoute>
           }
         />
-      </Routes>
+
+        <Route
+          path="/selected-products-cart"
+          element={
+            <ProtectedRoute>
+              <SelectedProductsSales />
+            </ProtectedRoute>
+          }
+        />
+        </Routes>
+      </SaleProvider>
     </>
   );
 }

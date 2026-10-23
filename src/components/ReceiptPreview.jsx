@@ -7,6 +7,7 @@ import {
 } from "../utils/format";
 import SaleButton from "../ui/SaleButton";
 import { getNames } from "../services/pages/PagesFunctionalities";
+import { Printer } from "lucide-react";
 
 const ReceiptPreview = ({ sale, onClose }) => {
   const { workers, branches } = useProductsContext();
@@ -20,18 +21,24 @@ const ReceiptPreview = ({ sale, onClose }) => {
   const getBranchName = useMemo(() => getNames(branches), [branches]);
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
-      <div className="flex w-[99%] sm:w-[70%] lg:w-[50%] flex-col rounded-2xl border border-[#e2e8f0] bg-white p-4 shadow-2xl sm:p-5">
+    <div className="printable-receipt fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
+      <div className="printable-receipt-card flex w-[99%] flex-col rounded-2xl border border-[#e2e8f0] bg-white p-4 shadow-2xl sm:w-[70%] sm:p-5 lg:w-[50%]">
         <div className="text-center mb-4">
           <p className="text-md font-black uppercase text-header-color">
             Auntie's Shops
           </p>
           <p className="capitalize">
-            {getBranchName[workInSaleCharge.branchId]}
+            {getBranchName[sale.branchId]}
           </p>
         </div>
 
         <div className="border-t border-b border-dashed border-[#cbd5e1] py-3 my-4 text-xs text-[#334155] space-y-1">
+          <p>
+            Receipt number:{" "}
+            <span className="font-semibold">
+              {sale.saleRecieptNumber ?? "—"}
+            </span>
+          </p>
           <p>
             Date:{" "}
             <span className="font-semibold">
@@ -47,13 +54,13 @@ const ReceiptPreview = ({ sale, onClose }) => {
           <p>
             Contact:{" "}
             <span className="font-semibold">
-              {workInSaleCharge.phoneNumber}
+              {workInSaleCharge?.phoneNumber || "—"}
             </span>
           </p>
           <p>
             Served by:{" "}
             <span className="font-semibold capitalize">
-              {workInSaleCharge.name}
+              {workInSaleCharge?.name || "—"}
             </span>
           </p>
           {sale.paymentMethod && (
@@ -99,9 +106,20 @@ const ReceiptPreview = ({ sale, onClose }) => {
           TOTAL: {formatMoney(sale?.total)}
         </div>
 
-        <div className="mt-6 flex flex-col gap-3 text-center text-[11px] text-header-description sm:flex-row sm:items-center sm:justify-between">
+        <div className="print-hidden mt-6 flex flex-col gap-3 text-center text-[11px] text-header-description sm:flex-row sm:items-center sm:justify-between">
           <p>Thank you for supprting Auntie's shops!</p>
-          <SaleButton onClick={onClose} text={"Close"} />
+          <div className="flex items-center justify-center gap-4">
+            <SaleButton
+              onClick={() => window.print()}
+              text={
+                <>
+                  <Printer size={14} className="mr-1 inline" />
+                  Print
+                </>
+              }
+            />
+            <SaleButton onClick={onClose} text={"Close"} />
+          </div>
         </div>
       </div>
     </div>

@@ -32,6 +32,10 @@ export const updateData = (endPoint, id, updatedData) => {
   return axios.patch(`${DATABASE_URL}/${endPoint}/${id}.json`, updatedData);
 };
 
+export const updateMultipleData = (updates) => {
+  return axios.patch(`${DATABASE_URL}/.json`, updates);
+};
+
 export const deleteData = (endPoint, id) => {
   return axios.delete(`${DATABASE_URL}/${endPoint}/${id}.json`);
 };

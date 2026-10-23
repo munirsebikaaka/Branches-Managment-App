@@ -1,6 +1,13 @@
 import { useAuthContext } from "../utils/context/CreateAuthContext";
 
-const Search = ({ title, urlBranchId, getBranchName, search, setSearch }) => {
+const Search = ({
+  title,
+  urlBranchId,
+  getBranchName,
+  search,
+  setSearch,
+  placeholder,
+}) => {
   const { user } = useAuthContext();
 
   return (
@@ -18,7 +25,7 @@ const Search = ({ title, urlBranchId, getBranchName, search, setSearch }) => {
 
       <input
         type="text"
-        placeholder="Search product..."
+        placeholder={placeholder}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="w-full md:w-72 px-4 py-2.5 border border-border-color rounded-lg text-sm focus:outline-none bg-white"

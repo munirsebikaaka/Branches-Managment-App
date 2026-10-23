@@ -56,6 +56,7 @@ const Products = () => {
             getBranchName={getBranchName}
             search={search}
             setSearch={setSearch}
+            placeholder={"Search product by name..."}
           />
 
           <FetchedError />

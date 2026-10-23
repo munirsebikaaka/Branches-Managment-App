@@ -30,7 +30,10 @@ const paymentMethods = [
 const ChoosePaymentMethod = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const selectedProducts = location.state?.selectedProducts;
+  const selectedProducts = useMemo(
+    () => location.state?.selectedProducts ?? [],
+    [location.state?.selectedProducts],
+  );
   const [paymentMethod, setPaymentMethod] = useState(
     location.state?.paymentMethod,
   );
@@ -58,7 +61,7 @@ const ChoosePaymentMethod = () => {
           <FetchedError />
 
           <button
-            onClick={() => navigate("/record-sale")}
+            onClick={() => navigate("/selected-products-cart")}
             className="inline-flex items-center gap-1 rounded-lg py-2 pr-3 text-sm font-semibold text-header-description transition-colors hover:text-header-color">
             <ChevronLeft size={18} />
             Back to sale
@@ -116,7 +119,7 @@ const ChoosePaymentMethod = () => {
               recording the sale. This selection records the method; it does not
               initiate a mobile-money charge.
             </p>
-            <SaleButton text={"Continue with selected method"} onClick={""} />
+            <SaleButton text={"Continue with selected method"} />
           </section>
         </div>
       </main>

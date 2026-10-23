@@ -1,5 +1,5 @@
 import { toast } from "react-toastify";
-import { deleteData, updateData } from "../../utils/api";
+import { deleteData, updateData, updateMultipleData } from "../../utils/api";
 import { isRecordSaleFormValid } from "../form/FormValidations";
 import { getFriendlyErrorMessage } from "../../utils/errorMessages";
 
@@ -166,18 +166,85 @@ export const updateDatabaseAndUi = async (
     const product = salesProducts.find((p) => p.id === productId);
     const newQuantity = product.quantity - quantitySold;
 
-    if (newQuantity <= 0) {
-      await deleteData("products", product.id);
-      setProducts((prev) => prev.filter((p) => p.id !== product.id));
+    await updateData("products", product.id, { quantity: newQuantity });
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === product.id ? { ...p, quantity: newQuantity } : p,
+      ),
+    );
+
+    if (newQuantity === 0) {
       toast.warning(`${product.name} is now out of stock!`);
-    } else {
-      await updateData("products", product.id, { quantity: newQuantity });
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.id === product.id ? { ...p, quantity: newQuantity } : p,
-        ),
-      );
     }
+  }
+};
+
+export const handleReturnSale = async (
+  sale,
+  products,
+  setProducts,
+  setSalesData,
+  setReturningId,
+  user,
+) => {
+  if (user?.role !== "owner") {
+    toast.warning(
+      "You can NOT complete the action, please contact your boss for more infor!",
+    );
+    return;
+  }
+  if (sale.status === "returned") {
+    toast.info("This sale has already been returned.");
+    return;
+  }
+
+  const saleProducts = sale.items?.map((item) => ({
+    item,
+    product: products.find((product) => product.id === item.productId),
+  }));
+  const missingProduct = saleProducts?.find(({ product }) => !product);
+
+  if (!saleProducts?.length || missingProduct) {
+    toast.error(
+      "This sale cannot be returned because one or more products are missing from inventory.",
+    );
+    return;
+  }
+
+  setReturningId(sale.id);
+  const returnedAt = new Date().toISOString();
+  const updates = {
+    [`sales/${sale.id}/status`]: "returned",
+    [`sales/${sale.id}/returnedAt`]: returnedAt,
+    [`sales/${sale.id}/returnedBy`]: user.id,
+  };
+  const updatedProducts = saleProducts.map(({ item, product }) => {
+    const quantity = +product.quantity + +item.quantity;
+    updates[`products/${product.id}/quantity`] = quantity;
+    return { ...product, quantity };
+  });
+
+  try {
+    await updateMultipleData(updates);
+    setProducts((current) =>
+      current.map(
+        (product) =>
+          updatedProducts.find((updated) => updated.id === product.id) ||
+          product,
+      ),
+    );
+    setSalesData((current) =>
+      current.map((item) =>
+        item.id === sale.id
+          ? { ...item, status: "returned", returnedAt, returnedBy: user.id }
+          : item,
+      ),
+    );
+    toast.success("Sale returned to stock successfully.");
+  } catch (err) {
+    toast.error(getFriendlyErrorMessage(err, "general"));
+  } finally {
+    setReturningId(null);
   }
 };
 
@@ -262,7 +329,7 @@ export const filterAppData = (
         data?.deviceModel,
         data?.saleRecieptNumber,
         data?.phoneOwnerCode,
-      ].some((value) => value?.toLowerCase().includes(searchValue));
+      ].some((value) => String(value).toLowerCase().includes(searchValue));
     });
   }
 

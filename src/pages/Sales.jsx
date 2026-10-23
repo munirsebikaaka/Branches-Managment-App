@@ -58,6 +58,7 @@ const Sales = () => {
             getBranchName={getBranchName}
             search={search}
             setSearch={setSearch}
+            placeholder={"Search products by Receipt number..."}
           />
 
           <FetchedError />
