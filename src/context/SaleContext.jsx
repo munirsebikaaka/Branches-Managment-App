@@ -7,6 +7,7 @@ export const SaleProvider = ({ children }) => {
     productId: "",
     quantity: "",
     price: "",
+    vat: 0,
   });
   const [calculatedQuantity, setCalculatedQuantity] = useState(0);
   const [showUpdateButton, setShowUpdateButton] = useState(false);

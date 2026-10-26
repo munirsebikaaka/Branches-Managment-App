@@ -1,4 +1,4 @@
-import { Printer } from "lucide-react";
+import { MessageCircle, Printer } from "lucide-react";
 import {
   formatMoney,
   formatReceiptDate,
@@ -7,13 +7,30 @@ import {
 import { useProductsContext } from "../utils/context/CreateProductContext";
 import { getNames } from "../services/pages/PagesFunctionalities";
 
-const ChargingReceipt = ({ receipt, onClose }) => {
+const ChargingReceipt = ({ receipt, isVisible, onClose }) => {
   const { branches } = useProductsContext();
   const branchNames = getNames(branches);
 
+  if (!isVisible || !receipt) return null;
+
+  const receiptMessage = [
+    "Auntie's Shops - Phone Charging Receipt",
+    `Branch: ${branchNames[receipt.branchId] || "Branch"}`,
+    `Phone owner code: ${receipt.phoneOwnerCode}`,
+    `Owner: ${receipt.customerName}`,
+    `Contact: ${receipt.contact}`,
+    `Phone: ${receipt.deviceModel}`,
+    `Received: ${formatReceiptDate(receipt.receivedAt)} ${formatReceiptTime(receipt.receivedAt)}`,
+    `Charging fee: ${formatMoney(receipt.price)}`,
+    `Payment status: ${receipt.paidOnArrival ? "Paid at drop-off" : "Unpaid"}`,
+    "",
+    "Keep the owner code to identify and collect your phone.",
+  ].join("\n");
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(receiptMessage)}`;
+
   return (
-    <div className="printable-receipt fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-      <div className="printable-receipt-card w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+    <section className="printable-receipt mx-auto w-full max-w-md p-4">
+      <div className="printable-receipt-card w-full rounded-2xl bg-white p-6 shadow-2xl">
         <div className="text-center">
           <p className="text-xs font-bold uppercase tracking-wider text-action-color">
             Phone charging receipt
@@ -58,7 +75,7 @@ const ChargingReceipt = ({ receipt, onClose }) => {
           </p>
         </div>
 
-        <div className="print-hidden flex gap-3">
+        <div className="print-hidden flex flex-wrap gap-3">
           <button
             type="button"
             onClick={() => window.print()}
@@ -66,6 +83,14 @@ const ChargingReceipt = ({ receipt, onClose }) => {
             <Printer size={16} aria-hidden="true" />
             Print receipt
           </button>
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700">
+            <MessageCircle size={16} aria-hidden="true" />
+            Share via WhatsApp
+          </a>
           <button
             type="button"
             onClick={onClose}
@@ -74,7 +99,7 @@ const ChargingReceipt = ({ receipt, onClose }) => {
           </button>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

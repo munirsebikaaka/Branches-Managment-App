@@ -83,11 +83,12 @@ export const handleAddProductToSale = (
       productName: product.name,
       quantity: +selectedItem.quantity,
       price: +selectedItem.price,
+      vat: +selectedItem.vat,
     },
     ...prev,
   ]);
 
-  setSelectedItem({ productId: "", quantity: "", price: "" });
+  setSelectedItem({ productId: "", quantity: "", price: "", vat: 0 });
   setError("");
 };
 
@@ -104,12 +105,13 @@ export const updateSelectedProduct = (
             ...product,
             quantity: selectedItem.quantity,
             price: selectedItem.price,
+            vat: selectedItem.vat,
           }
         : product,
     ),
   );
 
-  setSelectedItem({ productId: "", quantity: "", price: "" });
+  setSelectedItem({ productId: "", quantity: "", price: "", vat: 0 });
   toast.success("Product updated succesfully!");
   setShowUpdateButton((prev) => !prev);
 };
@@ -149,6 +151,7 @@ export const updateSelectedProductForm = (
     productId: product.productId,
     quantity: product.quantity,
     price: product.price,
+    vat: product.vat,
   }));
   toast.info("Make your updates.");
   setShowUpdateButton((prev) => !prev);

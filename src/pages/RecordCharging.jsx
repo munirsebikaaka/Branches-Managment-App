@@ -41,6 +41,12 @@ const RecordCharging = () => {
   const [onBlurErrors, setOnBlurErrors] = useState({});
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [receipt, setReceipt] = useState(null);
+  const [isReceiptVisible, setIsReceiptVisible] = useState(false);
+
+  const handleCloseReceipt = () => {
+    setIsReceiptVisible(false);
+    setReceipt(null);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -91,6 +97,7 @@ const RecordCharging = () => {
       };
       setChargingData((prev) => [createdRecord, ...prev]);
       setReceipt(createdRecord);
+      setIsReceiptVisible(true);
       setFormData((prev) => ({
         ...prev,
         customerName: "",
@@ -120,8 +127,15 @@ const RecordCharging = () => {
       <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       <main className="min-w-0 flex-1 p-4 sm:p-6 lg:ml-64 lg:p-10">
-        <div className="mx-auto max-w-2xl space-y-6">
-          <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
+        <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
+        {isReceiptVisible && receipt ? (
+          <ChargingReceipt
+            receipt={receipt}
+            isVisible={isReceiptVisible}
+            onClose={handleCloseReceipt}
+          />
+        ) : (
+          <div className="mx-auto max-w-2xl space-y-6">
           <FetchedError />
 
           <FormsHeader
@@ -211,11 +225,9 @@ const RecordCharging = () => {
               </Button>
             </form>
           </div>
-        </div>
+          </div>
+        )}
       </main>
-      {receipt && (
-        <ChargingReceipt receipt={receipt} onClose={() => setReceipt(null)} />
-      )}
     </div>
   );
 };

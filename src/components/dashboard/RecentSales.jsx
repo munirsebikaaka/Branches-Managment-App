@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import SalesTable from "../products/SalesTable";
 
-const RecentSales = ({ filteredSales, onViewReceipt }) => {
+const RecentSales = ({ filteredSales, onViewReceipt, getBranchName }) => {
   const recentSales = useMemo(() => {
     return [...filteredSales]
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -24,6 +24,7 @@ const RecentSales = ({ filteredSales, onViewReceipt }) => {
             <SalesTable
               filteredSales={recentSales}
               onViewReceipt={onViewReceipt}
+              getBranchName={getBranchName}
             />
           )}
         </div>

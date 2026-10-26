@@ -25,6 +25,17 @@ const Dashboard = () => {
     useProductsContext();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [isReceiptVisible, setIsReceiptVisible] = useState(false);
+
+  const handleViewReceipt = (sale) => {
+    setSelectedReceipt(sale);
+    setIsReceiptVisible(true);
+  };
+
+  const handleCloseReceipt = () => {
+    setIsReceiptVisible(false);
+    setSelectedReceipt(null);
+  };
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -83,8 +94,15 @@ const Dashboard = () => {
       <Blur setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       <main className="flex-1 p-4 md:p-12 md:ml-64">
-        <div className="max-w-6xl mx-auto">
-          <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
+        <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
+        {isReceiptVisible ? (
+          <ReceiptPreview
+            sale={selectedReceipt}
+            isVisible={isReceiptVisible}
+            onClose={handleCloseReceipt}
+          />
+        ) : (
+          <div className="max-w-6xl mx-auto">
           <FetchedError />
 
           <div className="mb-8">
@@ -125,18 +143,13 @@ const Dashboard = () => {
           />
           <RecentSales
             filteredSales={filteredSales}
-            onViewReceipt={setSelectedReceipt}
+            onViewReceipt={handleViewReceipt}
+            getBranchName={getBranchName}
           />
           <OwnerBackButton user={user} />
-        </div>
+          </div>
+        )}
       </main>
-
-      {selectedReceipt && (
-        <ReceiptPreview
-          sale={selectedReceipt}
-          onClose={() => setSelectedReceipt(null)}
-        />
-      )}
     </div>
   );
 };

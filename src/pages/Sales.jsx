@@ -22,6 +22,17 @@ const Sales = () => {
   const [search, setSearch] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [isReceiptVisible, setIsReceiptVisible] = useState(false);
+
+  const handleViewReceipt = (sale) => {
+    setSelectedReceipt(sale);
+    setIsReceiptVisible(true);
+  };
+
+  const handleCloseReceipt = () => {
+    setIsReceiptVisible(false);
+    setSelectedReceipt(null);
+  };
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -49,34 +60,35 @@ const Sales = () => {
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <main className="min-w-0 flex-1 p-4 transition-all duration-300 sm:p-6 lg:ml-64 lg:p-10">
-        <div className="mx-auto max-w-6xl">
-          <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
-
-          <Search
-            title={"Sales history"}
-            urlBranchId={urlBranchId}
-            getBranchName={getBranchName}
-            search={search}
-            setSearch={setSearch}
-            placeholder={"Search products by Receipt number..."}
+        <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
+        {isReceiptVisible ? (
+          <ReceiptPreview
+            sale={selectedReceipt}
+            isVisible={isReceiptVisible}
+            onClose={handleCloseReceipt}
           />
+        ) : (
+          <div className="mx-auto max-w-6xl">
+            <Search
+              title={"Sales history"}
+              urlBranchId={urlBranchId}
+              getBranchName={getBranchName}
+              search={search}
+              setSearch={setSearch}
+              placeholder={"Search products by Receipt number..."}
+            />
 
-          <FetchedError />
+            <FetchedError />
 
-          <SalesTable
-            filteredSales={filteredSales}
-            onViewReceipt={setSelectedReceipt}
-          />
-          <OwnerBackButton user={user} />
-        </div>
+            <SalesTable
+              filteredSales={filteredSales}
+              onViewReceipt={handleViewReceipt}
+              getBranchName={getBranchName}
+            />
+            <OwnerBackButton user={user} />
+          </div>
+        )}
       </main>
-
-      {selectedReceipt && (
-        <ReceiptPreview
-          sale={selectedReceipt}
-          onClose={() => setSelectedReceipt(null)}
-        />
-      )}
     </div>
   );
 };

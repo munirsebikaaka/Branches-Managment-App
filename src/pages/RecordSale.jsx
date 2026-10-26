@@ -30,6 +30,7 @@ const inputNames = {
   productId: "ProductId",
   quantity: "Quantity",
   price: "Price",
+  vat: "VAT",
 };
 const RecordSale = () => {
   const { user } = useAuthContext();
@@ -53,6 +54,7 @@ const RecordSale = () => {
   const [onBlurErrors, setOnBlurErrors] = useState({});
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [isReceiptVisible, setIsReceiptVisible] = useState(false);
 
   const activeBranchId = user?.branchId;
 
@@ -60,6 +62,11 @@ const RecordSale = () => {
 
   const handleBlur = createHandleBlur(inputNames, setOnBlurErrors);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
+
+  const handleCloseReceipt = () => {
+    setIsReceiptVisible(false);
+    setSelectedReceipt(null);
+  };
 
   const salesProducts = useMemo(() => {
     return products.filter((product) => product.branchId === activeBranchId);
@@ -87,6 +94,7 @@ const RecordSale = () => {
       productId: product.id,
       quantity: "1",
       price: product.sellingPrice,
+      vat: product.vat,
     });
     setCalculatedQuantity(+product.quantity);
     setShowUpdateButton(false);
@@ -138,6 +146,7 @@ const RecordSale = () => {
         ...selectedItem,
         quantity: +selectedItem.quantity,
         price: +selectedItem.price,
+        vat: +selectedItem.vat,
       },
       setSelectedItem,
       setShowUpdateButton,
@@ -170,7 +179,7 @@ const RecordSale = () => {
       const sale = {
         items,
         total: saleTotal,
-
+        vat: selectedItem.vat,
         branchId: activeBranchId,
         createdBy: user?.id,
         createdAt: new Date().toISOString(),
@@ -183,6 +192,7 @@ const RecordSale = () => {
         ...sale,
       };
       setSelectedReceipt(createdSale);
+      setIsReceiptVisible(true);
       setSalesData((prev) => [createdSale, ...prev]);
       await updateDatabaseAndUi(filteredProducts, setProducts, items);
 
@@ -212,172 +222,186 @@ const RecordSale = () => {
 
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       <main className="min-w-0 flex-1 p-4 sm:p-6 lg:ml-64 lg:p-10">
-        <div className="mx-auto">
-          <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
-          <Search
-            title={"Select a product to add it to the sale."}
-            urlBranchId={null}
-            getBranchName={getBranchName}
-            search={search}
-            setSearch={setSearch}
-            placeholder={"Search by product name..."}
+        <ResponsiveNav onClick={() => setIsSidebarOpen(true)} />
+        {isReceiptVisible && selectedReceipt ? (
+          <ReceiptPreview
+            sale={selectedReceipt}
+            isVisible={isReceiptVisible}
+            onClose={handleCloseReceipt}
           />
+        ) : (
+          <div className="mx-auto">
+            <Search
+              title={"Select a product to add it to the sale."}
+              urlBranchId={null}
+              getBranchName={getBranchName}
+              search={search}
+              setSearch={setSearch}
+              placeholder={"Search by product name..."}
+            />
 
-          <FetchedError />
+            <FetchedError />
 
-          <form onSubmit={handleSubmit}>
-            <div className="flex gap-4 justify-between">
-              <section className="rounded-2xl w-[60%] border border-border-color bg-white p-4 shadow-sm sm:p-6">
-                <div className="mb-4">
-                  <h2 className="text-lg font-bold text-header-color">
-                    Available products
-                  </h2>
-                  <p className="mt-1 text-sm text-header-description">
-                    Select a product to add it to the sale.
-                  </p>
-                </div>
-                {filteredProducts.length === 0 ? (
-                  <p className=" p-5 text-center text-sm text-header-description">
-                    No products are available at this branch.
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                    {filteredProducts.map((product) => {
-                      const selected = selectedProducts.some(
-                        (item) => item.productId === product.id,
-                      );
-                      const isSelected = selectedItem.productId === product.id;
-
-                      return (
-                        <button
-                          key={product.id}
-                          type="button"
-                          disabled={
-                            selected ||
-                            +product.quantity < 1 ||
-                            showUpdateButton
-                          }
-                          onClick={() => handleSelectProduct(product)}
-                          className={`min-w-0 rounded-xl border p-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
-                            isSelected
-                              ? "border-action-color bg-indigo-50/60"
-                              : "border-border-color hover:border-action-color/50"
-                          }`}>
-                          <span className="block truncate font-semibold text-header-color">
-                            {product.name}
-                          </span>
-                          <span className="mt-1 block text-sm text-header-description">
-                            {formatMoney(+product.sellingPrice)}
-                          </span>
-                          <span className="mt-2 block text-xs font-medium text-header-description">
-                            {selected
-                              ? "Already in cart"
-                              : `${product.quantity} in stock`}
-                          </span>
-                        </button>
-                      );
-                    })}
+            <form onSubmit={handleSubmit}>
+              <div className="flex gap-4 justify-between">
+                <section className="rounded-2xl w-[60%] border border-border-color bg-white p-4 shadow-sm sm:p-6">
+                  <div className="mb-4">
+                    <h2 className="text-lg font-bold text-header-color">
+                      Available products
+                    </h2>
+                    <p className="mt-1 text-sm text-header-description">
+                      Select a product to add it to the sale.
+                    </p>
                   </div>
-                )}
-              </section>
-
-              <section className="relative w-100 rounded-2xl border border-border-color bg-white p-4 shadow-sm sm:p-6 self-start">
-                <h3 className="font-semibold text-header-color">
-                  {showUpdateButton
-                    ? "Update cart item"
-                    : "Add selected product"}
-                </h3>
-
-                <div className="absolute px-3 top-0 right-0">
-                  <SaleButton
-                    disabled={isGoToSelectedItemsButtonDissabled}
-                    onClick={goToSelectedItems}
-                    text={`${selectedProducts.length} View Items`}
-                  />
-                </div>
-
-                {!selectedItem.productId && (
-                  <p className="text-sm text-header-description">
-                    Choose a product to set its quantity and price.
-                  </p>
-                )}
-
-                <p className="text-sm capitalize mb-3 font-semibold text-header-color">
-                  {
-                    filteredProducts.find(
-                      (product) => product.id === selectedItem.productId,
-                    )?.name
-                  }
-                </p>
-
-                <div className="space-y-3 mb-3">
-                  <Input
-                    label={"Selling Price"}
-                    inputConfig={{
-                      type: "number",
-                      name: "price",
-                      value: selectedItem.price,
-                      onChange: handleChange,
-                      placeholder: "0.00",
-                      min: 0.01,
-                      step: "any",
-                      onBlur: handleBlur,
-                    }}
-                    error={onBlurErrors.price}
-                  />
-                  <Input
-                    label={"Quantity Sold"}
-                    inputConfig={{
-                      type: "number",
-                      name: "quantity",
-                      value: selectedItem.quantity,
-                      onChange: handleChange,
-                      placeholder: "0",
-                      min: 1,
-                      max: calculatedQuantity,
-                      step: 1,
-                      onBlur: handleBlur,
-                    }}
-                    error={onBlurErrors.quantity}
-                  />
-                </div>
-
-                {selectedItem.price > 0 && (
-                  <p
-                    className={`text-sm font-medium text-${isProvidedQuantitySuported ? "header-description" : "error-color"}`}>
-                    {isProvidedQuantitySuported
-                      ? `Item total: ${totalPricePerSelectedItem}`
-                      : "The provided quantity is higher than the quantity in stock."}
-                  </p>
-                )}
-
-                <Error message={error}>{error}</Error>
-
-                <div className="mt-2 flex justify-center">
-                  {!showUpdateButton ? (
-                    <SaleButton
-                      onClick={handleAddToSale}
-                      text={"+ Add Product to Sale"}
-                    />
+                  {filteredProducts.length === 0 ? (
+                    <p className=" p-5 text-center text-sm text-header-description">
+                      No products are available at this branch.
+                    </p>
                   ) : (
-                    <SaleButton
-                      onClick={handleUpdateSelectedProduct}
-                      text={"Confirm Product Update"}
-                    />
-                  )}
-                </div>
-              </section>
-            </div>
-          </form>
-        </div>
-      </main>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                      {filteredProducts.map((product) => {
+                        const selected = selectedProducts.some(
+                          (item) => item.productId === product.id,
+                        );
+                        const isSelected =
+                          selectedItem.productId === product.id;
 
-      {selectedReceipt && (
-        <ReceiptPreview
-          sale={selectedReceipt}
-          onClose={() => setSelectedReceipt(null)}
-        />
-      )}
+                        return (
+                          <button
+                            key={product.id}
+                            type="button"
+                            disabled={
+                              selected ||
+                              +product.quantity < 1 ||
+                              showUpdateButton
+                            }
+                            onClick={() => handleSelectProduct(product)}
+                            className={`min-w-0 rounded-xl border p-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                              isSelected
+                                ? "border-action-color bg-indigo-50/60"
+                                : "border-border-color hover:border-action-color/50"
+                            }`}>
+                            <span className="block truncate font-semibold text-header-color">
+                              {product.name}
+                            </span>
+                            <span className="mt-1 block text-sm text-header-description">
+                              {formatMoney(+product.sellingPrice)}
+                            </span>
+                            <span className="mt-2 block text-xs font-medium text-header-description">
+                              {selected
+                                ? "Already in cart"
+                                : `${product.quantity} in stock`}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
+
+                <section className="relative w-100 rounded-2xl border border-border-color bg-white p-4 shadow-sm sm:p-6 self-start">
+                  <h3 className="font-semibold text-header-color">
+                    {showUpdateButton
+                      ? "Update cart item"
+                      : "Add selected product"}
+                  </h3>
+
+                  <div className="absolute px-3 top-0 right-0">
+                    <SaleButton
+                      disabled={isGoToSelectedItemsButtonDissabled}
+                      onClick={goToSelectedItems}
+                      text={`${selectedProducts.length} View Items`}
+                    />
+                  </div>
+
+                  {!selectedItem.productId && (
+                    <p className="text-sm text-header-description">
+                      Choose a product to set its quantity and price.
+                    </p>
+                  )}
+
+                  <p className="text-sm capitalize mb-3 font-semibold text-header-color">
+                    {
+                      filteredProducts.find(
+                        (product) => product.id === selectedItem.productId,
+                      )?.name
+                    }
+                  </p>
+
+                  <div className="space-y-3 mb-3">
+                    <Input
+                      label={"Selling Price"}
+                      inputConfig={{
+                        type: "number",
+                        name: "price",
+                        value: selectedItem.price,
+                        onChange: handleChange,
+                        placeholder: "0.00",
+                        min: 0.01,
+                        step: "any",
+                        onBlur: handleBlur,
+                      }}
+                      error={onBlurErrors.price}
+                    />
+                    <Input
+                      label={"Quantity Sold"}
+                      inputConfig={{
+                        type: "number",
+                        name: "quantity",
+                        value: selectedItem.quantity,
+                        onChange: handleChange,
+                        placeholder: "0",
+                        min: 1,
+                        max: calculatedQuantity,
+                        step: 1,
+                        onBlur: handleBlur,
+                      }}
+                      error={onBlurErrors.quantity}
+                    />
+                    <Input
+                      label={"Value Added Tax"}
+                      inputConfig={{
+                        type: "number",
+                        name: "vat",
+                        value: selectedItem.vat,
+                        onChange: handleChange,
+                        placeholder: "0",
+                        onBlur: handleBlur,
+                      }}
+                      error={onBlurErrors.vat}
+                    />
+                  </div>
+
+                  {selectedItem.price > 0 && (
+                    <p
+                      className={`text-sm font-medium text-${isProvidedQuantitySuported ? "header-description" : "error-color"}`}>
+                      {isProvidedQuantitySuported
+                        ? `Item total: ${totalPricePerSelectedItem}`
+                        : "The provided quantity is higher than the quantity in stock."}
+                    </p>
+                  )}
+
+                  <Error message={error}>{error}</Error>
+
+                  <div className="mt-2 flex justify-center">
+                    {!showUpdateButton ? (
+                      <SaleButton
+                        onClick={handleAddToSale}
+                        text={"+ Add Product to Sale"}
+                      />
+                    ) : (
+                      <SaleButton
+                        onClick={handleUpdateSelectedProduct}
+                        text={"Confirm Product Update"}
+                      />
+                    )}
+                  </div>
+                </section>
+              </div>
+            </form>
+          </div>
+        )}
+      </main>
     </div>
   );
 };

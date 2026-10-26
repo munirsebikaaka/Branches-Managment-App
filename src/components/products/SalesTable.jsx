@@ -5,7 +5,7 @@ import SaleButton from "../../ui/SaleButton";
 import { Undo2 } from "lucide-react";
 import { useAuthContext } from "../../utils/context/CreateAuthContext";
 
-const SalesTable = ({ filteredSales, onViewReceipt }) => {
+const SalesTable = ({ filteredSales, onViewReceipt, getBranchName }) => {
   const { user } = useAuthContext();
   const { products, setProducts, setSalesData } = useProductsContext();
 
@@ -20,7 +20,7 @@ const SalesTable = ({ filteredSales, onViewReceipt }) => {
           return (
             <div
               key={sale.id}
-              className="flex items-center justify-between rounded-2xl border border-border-color bg-white p-4 shadow-sm transition-colors hover:border-[#4f46e5]">
+              className="flex items-center justify-between rounded-2xl border border-border-color bg-white p-4 shadow-sm transition-colors hover:border-indigo-200">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wide text-[#94a3b8]">
                   Receipt number
@@ -29,7 +29,6 @@ const SalesTable = ({ filteredSales, onViewReceipt }) => {
                   {sale?.saleRecieptNumber}
                 </p>
               </div>
-
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wide text-[#94a3b8]">
                   Date & Time
@@ -39,6 +38,14 @@ const SalesTable = ({ filteredSales, onViewReceipt }) => {
                 </p>
               </div>
 
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-[#94a3b8]">
+                  branch name
+                </p>
+                <p className="mt-1 text-sm text-[#475569]">
+                  {getBranchName[sale.branchId]}
+                </p>
+              </div>
               <div className="flex items-center gap-2">
                 <SaleButton
                   onClick={() => onViewReceipt && onViewReceipt(sale)}
